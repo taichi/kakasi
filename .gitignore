@@ -4,3 +4,4 @@ coverage
 types/generated.d.ts
 /package-lock.json.md5
 lib
+/src/grammar.js
