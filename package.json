@@ -31,6 +31,7 @@
     "compile:ts": "tsc",
     "compile:parser": "nearleyc src/grammar.ne -o src/grammar.js",
     "test": "ava-ts test/**/*.test.ts",
+    "test:parser": "ava-ts test/**/parser.test.ts",
     "watch:test": "ava-ts --watch test/**/*.test.ts",
     "cover": "nyc ava-ts test/**/*.test.ts"
   },

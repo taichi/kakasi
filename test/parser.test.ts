@@ -15,3 +15,5 @@ test(macro, 'moge hoge "foo\nmoge"', ['moge', 'hoge', 'foo\nmoge']);
 test(macro, 'moge hoge \'foomoge\'', ['moge', 'hoge', 'foomoge']);
 test(macro, 'moge hoge \'foo\'\'moge\'', ['moge', 'hoge', 'foo\'moge']);
 test(macro, 'moge hoge \'foo\nmoge\'', ['moge', 'hoge', 'foo\nmoge']);
+
+test(macro, 'moge hoge\t goge', ['moge', 'hoge', 'goge']);
