@@ -1,5 +1,5 @@
 // tslint:disable-next-line:import-name
-import test, { AssertContext, Macro } from 'ava';
+import test, { AssertContext, Macro, TestContext } from 'ava';
 
 import { parse } from '../src/parser';
 
