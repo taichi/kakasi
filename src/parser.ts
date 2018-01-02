@@ -1,7 +1,8 @@
 import * as nearley from 'nearley';
 
-// tslint:disable-next-line:no-require-imports no-var-requires
-const GRAMMER = nearley.Grammar.fromCompiled(require('./grammar.js'));
+import * as SPEC from './grammar';
+
+const GRAMMER = nearley.Grammar.fromCompiled(SPEC);
 
 export function parse(value: string): string[] {
     const parser = new nearley.Parser(GRAMMER);

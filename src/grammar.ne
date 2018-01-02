@@ -1,24 +1,33 @@
+@preprocessor typescript
+
 @{%
-var appendItemChar = function(d) { return d[0].join(""); };
-var unquote = function (d) { return d[1]; };
+import { NODE_TYPE, node } from "./node";
+
+const concatChar = d => { return d[0].join(""); };
 %}
 
-value               -> string
-                     | value ws string                   {% function (d) { return d[0].concat([d[2]]); } %}
+command             -> (string | expression) (ws (string | expression)):* {% 
+  d => d[1].reduce((a, c) => a.concat(c[1]), d[0])
+%}
 
-string              -> unquoted_value                    {% id %}
-                     | "\"" double_quoted "\""           {% unquote %}
-                     | "'" single_quoted "'"             {% unquote %}
+expression          -> "$(" expression_string ")"        {% node(NODE_TYPE.EXPRESSION, 1) %}
+expression_string   -> string (ws string):*              {%
+  d => d[1].reduce((a, c) => a.concat(c[1]), [d[0]])
+%}
 
-double_quoted       -> double_quoted_value:+             {% appendItemChar %}
-double_quoted_value -> [^"]                              {% id %}
-                     | "\"\""                            {% function (d) { return "\""; } %}
+string              -> unquoted_value                    {% node(NODE_TYPE.TEXT, 0) %}
+                     | "\"" double_quoted "\""           {% node(NODE_TYPE.TEXT, 1) %}
+                     | "'" single_quoted "'"             {% node(NODE_TYPE.TEXT, 1) %}
 
-single_quoted       -> single_quoted_value:+             {% appendItemChar %}
-single_quoted_value -> [^']                              {% id %}
-                     | "''"                              {% function (d) { return "'"; } %}
+double_quoted       -> double_quoted_value:+             {% concatChar %}
+double_quoted_value -> [^"]                              
+                     | "\"\""                            {% d => { return "\""; } %}
 
-unquoted_value      -> char:+                            {% appendItemChar %}
+single_quoted       -> single_quoted_value:+             {% concatChar %}
+single_quoted_value -> [^']                              
+                     | "''"                              {% d => { return "'"; } %}
 
-char                -> [^\s"']
-ws                  -> [\s]:+
+unquoted_value      -> char:+                            {% concatChar %}
+
+char                -> [^\s"'()]
+ws                  -> [\s]:+                            {% concatChar %}

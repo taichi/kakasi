@@ -23,5 +23,10 @@
             "property-declaration",
             "member-variable-declaration"
         ]
+    },
+    "linterOptions": {
+        "exclude": [
+            "src/grammar.ts"
+        ]
     }
 }
