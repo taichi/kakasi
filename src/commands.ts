@@ -1,3 +1,4 @@
+import { factory as Echo } from './command/echo';
 import { Config } from './config';
 
 export interface ICommand {
@@ -42,4 +43,11 @@ export class CommandRepository implements ICommandRepository {
         return this.defaultFactory(this.config, [key, ...body]);
     }
 
+}
+
+export function core(config: Config): ICommandRepository {
+    const cr = new CommandRepository(config, Echo);
+    cr.register('echo', Echo);
+
+    return cr;
 }
