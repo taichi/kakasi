@@ -1,4 +1,6 @@
 
+export type Node = TextNode | ExpressionNode;
+
 export class TextNode {
     public readonly value: string;
 
