@@ -1,7 +1,7 @@
 // tslint:disable-next-line:import-name
 import test, { AssertContext, Macro, TestContext } from 'ava';
 
-import { NODE_TYPE } from '../src/node';
+import { ExpressionNode, TextNode } from '../src/node';
 import { parse } from '../src/parser';
 
 const macro: Macro<AssertContext> = (t: AssertContext, input: string, expected: string[]) => {
@@ -10,85 +10,85 @@ const macro: Macro<AssertContext> = (t: AssertContext, input: string, expected: 
 };
 
 test(macro, 'moge', [
-    { type: NODE_TYPE.TEXT, value: 'moge' }]);
+    new TextNode('moge')]);
 
 test(macro, 'moge hoge', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'hoge' }]);
+    new TextNode('moge'),
+    new TextNode('hoge')]);
 
 test(macro, 'moge\thoge', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'hoge' }]);
+    new TextNode('moge'),
+    new TextNode('hoge')]);
 
 test(macro, 'moge \t hoge', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'hoge' }]);
+    new TextNode('moge'),
+    new TextNode('hoge')]);
 
 test(macro, 'moge "foomoge"', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'foomoge' }]);
+    new TextNode('moge'),
+    new TextNode('foomoge')]);
 
 test(macro, 'moge "foo\"\"moge"', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'foo\"moge' }]);
+    new TextNode('moge'),
+    new TextNode('foo\"moge')]);
 
 test(macro, 'moge \'foo\nmoge\'', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'foo\nmoge' }]);
+    new TextNode('moge'),
+    new TextNode('foo\nmoge')]);
 
 test(macro, 'moge \'foomoge\'', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'foomoge' }]);
+    new TextNode('moge'),
+    new TextNode('foomoge')]);
 
 test(macro, 'moge \'foo\'\'moge\'', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'foo\'moge' }]);
+    new TextNode('moge'),
+    new TextNode('foo\'moge')]);
 
 test(macro, 'moge \'foo\nmoge\'', [
-    { type: NODE_TYPE.TEXT, value: 'moge' },
-    { type: NODE_TYPE.TEXT, value: 'foo\nmoge' }]);
+    new TextNode('moge'),
+    new TextNode('foo\nmoge')]);
 
 test(macro, '$(moge)', [
-    {
-        type: NODE_TYPE.EXPRESSION, value: [
-            { type: NODE_TYPE.TEXT, value: 'moge' }],
-    }]);
+    new ExpressionNode(
+        [new TextNode('moge')],
+    )]);
 
 test(macro, '$(moge hoge)', [
-    {
-        type: NODE_TYPE.EXPRESSION, value: [
-            { type: NODE_TYPE.TEXT, value: 'moge' },
-            { type: NODE_TYPE.TEXT, value: 'hoge' }],
-    }]);
-
-test(macro, 'hoge $(moge) goge', [
-    { type: NODE_TYPE.TEXT, value: 'hoge' },
-    {
-        type: NODE_TYPE.EXPRESSION, value: [
-            { type: NODE_TYPE.TEXT, value: 'moge' },
+    new ExpressionNode(
+        [
+            new TextNode('moge'),
+            new TextNode('hoge'),
         ],
-    },
-    { type: NODE_TYPE.TEXT, value: 'goge' },
+    )]);
+
+test(macro, 'hoge $(moge) doge', [
+    new TextNode('hoge'),
+    new ExpressionNode(
+        [
+            new TextNode('moge'),
+        ],
+    ),
+    new TextNode('doge'),
 ]);
 
 test(macro, 'hoge $(moge doge) goge', [
-    { type: NODE_TYPE.TEXT, value: 'hoge' },
-    {
-        type: NODE_TYPE.EXPRESSION, value: [
-            { type: NODE_TYPE.TEXT, value: 'moge' },
-            { type: NODE_TYPE.TEXT, value: 'doge' },
+    new TextNode('hoge'),
+    new ExpressionNode(
+        [
+            new TextNode('moge'),
+            new TextNode('doge'),
         ],
-    },
-    { type: NODE_TYPE.TEXT, value: 'goge' },
+    ),
+    new TextNode('goge'),
 ]);
 
 test(macro, 'hoge $(moge "doge doge") goge', [
-    { type: NODE_TYPE.TEXT, value: 'hoge' },
-    {
-        type: NODE_TYPE.EXPRESSION, value: [
-            { type: NODE_TYPE.TEXT, value: 'moge' },
-            { type: NODE_TYPE.TEXT, value: 'doge doge' },
+    new TextNode('hoge'),
+    new ExpressionNode(
+        [
+            new TextNode('moge'),
+            new TextNode('doge doge'),
         ],
-    },
-    { type: NODE_TYPE.TEXT, value: 'goge' },
+    ),
+    new TextNode('goge'),
 ]);
