@@ -1,7 +1,7 @@
 // tslint:disable-next-line:import-name
 import test, { Macro, TestContext } from 'ava';
 
-import { ExpressionNode, Node, TextNode } from '../src/node';
+import { ComboNode, ExpressionNode, Node, TextNode } from '../src/node';
 import { parse } from '../src/parser';
 
 const macro: Macro<TestContext> = (t: TestContext, input: string, expected: Node[]) => {
@@ -92,4 +92,124 @@ test(macro, 'hoge $(moge "doge doge") goge', [
         ],
     ),
     new TextNode('goge'),
+]);
+
+test(macro, 'hoge$(moge)', [
+    new ComboNode([
+        new TextNode('hoge'),
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+    ]),
+]);
+
+test(macro, '$(moge)goge', [
+    new ComboNode([
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+        new TextNode('goge'),
+    ]),
+]);
+
+test(macro, 'hoge$(moge)goge', [
+    new ComboNode([
+        new TextNode('hoge'),
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+        new TextNode('goge'),
+    ]),
+]);
+
+test(macro, 'aaa hoge$(moge)goge', [
+    new TextNode('aaa'),
+    new ComboNode([
+        new TextNode('hoge'),
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+        new TextNode('goge'),
+    ]),
+]);
+
+test(macro, 'hoge$(moge)goge aaa', [
+    new ComboNode([
+        new TextNode('hoge'),
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+        new TextNode('goge'),
+    ]),
+    new TextNode('aaa'),
+]);
+
+test(macro, '$(aaa) hoge$(moge)goge', [
+    new ExpressionNode(
+        [
+            new TextNode('aaa'),
+        ],
+    ),
+    new ComboNode([
+        new TextNode('hoge'),
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+        new TextNode('goge'),
+    ]),
+]);
+
+test(macro, 'hoge$(moge)goge $(aaa)', [
+    new ComboNode([
+        new TextNode('hoge'),
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+        new TextNode('goge'),
+    ]),
+    new ExpressionNode(
+        [
+            new TextNode('aaa'),
+        ],
+    ),
+]);
+
+test(macro, 'aaa hoge$(moge)goge $(bbb)', [
+    new TextNode('aaa'),
+    new ComboNode([
+        new TextNode('hoge'),
+        new ExpressionNode(
+            [
+                new TextNode('moge'),
+            ],
+        ),
+        new TextNode('goge'),
+    ]),
+    new ExpressionNode(
+        [
+            new TextNode('bbb'),
+        ],
+    ),
+]);
+
+test(macro, '"hoge$(moge)goge"', [
+    new TextNode('hoge$(moge)goge'),
+]);
+
+test(macro, '\'hoge$(moge)goge\'', [
+    new TextNode('hoge$(moge)goge'),
 ]);

@@ -1,14 +1,18 @@
 @preprocessor typescript
 
 @{%
-import { ExpressionNode, TextNode } from "./node";
+import { ComboNode, ExpressionNode, TextNode } from "./node";
 
 const concatChar = d => { return d[0].join(""); };
 %}
 
-command             -> (string | expression) (ws (string | expression)):* {% 
+command             -> (string | expression | combo) (ws (string | expression | combo)):* {% 
   d => d[1].reduce((a, c) => a.concat(c[1]), d[0])
 %}
+
+combo               -> string expression        {% ComboNode.of(2) %}
+                     | expression string        {% ComboNode.of(2) %}
+                     | string expression string {% ComboNode.of(3) %}
 
 expression          -> "$(" expression_string ")"        {% ExpressionNode.of(1) %}
 expression_string   -> string (ws string):*              {%
