@@ -42,7 +42,6 @@ export class CommandRepository implements ICommandRepository {
 
         return this.defaultFactory(this.config, [key, ...body]);
     }
-
 }
 
 export function core(config: Config): ICommandRepository {

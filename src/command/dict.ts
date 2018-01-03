@@ -31,7 +31,7 @@ export class InMemoryDict implements ICommand {
     // tslint:disable-next-line:no-any
     public execute(context: Map<string, any>): Promise<string> {
         if (this.args.length < 1) {
-            return Promise.reject('引数が一つ以上必要です。');
+            return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
         if (context.has(KEY) === false) {
             context.set(KEY, new Map<string, string[]>());
@@ -59,6 +59,13 @@ export class InMemoryDictEditor implements ICommand {
     }
 
     public execute(context: Map<string, any>): Promise<string> {
+        if (this.args.length < 1) {
+            return Promise.reject('dict コマンドは引数が一つ以上必要です。');
+        }
+        if (context.has(KEY) === false) {
+            context.set(KEY, new Map<string, string[]>());
+        }
+
         const subcmd = this.args[0];
         const newargs = this.args.slice(1);
         switch (subcmd) {
@@ -143,7 +150,7 @@ dict [list|add|delete|alias] ...
             }
             const found = words.find((v: string) => v === newone);
             if (found) {
-                return Promise.reject(`${newone} は登録済みです。`);
+                return Promise.reject(`${key} に ${newone} は登録済みです。`);
             }
             words.push(newone);
 

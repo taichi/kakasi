@@ -36,6 +36,9 @@ export class CliBot {
             Promise.resolve(pros).then((str: string) => {
                 console.log(str);
                 cli.prompt();
+            }).catch((msg: string) => {
+                console.error(msg);
+                cli.prompt();
             });
         }).on('close', () => {
             console.log('');
@@ -46,6 +49,4 @@ export class CliBot {
     }
 }
 
-const config = load(process.argv[2]);
-
-new CliBot(config).run();
+new CliBot(load(process.argv[2])).run();
