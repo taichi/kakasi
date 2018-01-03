@@ -20,8 +20,7 @@ export class TextNode<R> implements IAcceptable<R> {
 
     // tslint:disable-next-line:no-reserved-keywords function-name
     public static of(index: number) {
-        return (d: {}[]) => {
-            // @ts-ignore
+        return (d: string[]) => {
             return new TextNode(d[index]);
         };
     }
@@ -39,9 +38,8 @@ export class ExpressionNode<R> implements IAcceptable<R> {
     }
 
     // tslint:disable-next-line:no-reserved-keywords function-name
-    public static of(index: number) {
-        return (d: {}[]) => {
-            // @ts-ignore
+    public static of<R>(index: number) {
+        return (d: TextNode<R>[][]) => {
             return new ExpressionNode(d[index]);
         };
     }
@@ -59,9 +57,8 @@ export class ComboNode<R> implements IAcceptable<R> {
     }
 
     // tslint:disable-next-line:no-reserved-keywords function-name
-    public static of(n: number) {
-        return (d: {}[]) => {
-            // @ts-ignore
+    public static of<R>(n: number) {
+        return (d: (TextNode<R> | ExpressionNode<R>)[]) => {
             return new ComboNode(d.slice(0, n));
         };
     }

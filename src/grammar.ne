@@ -3,19 +3,22 @@
 @{%
 import { ComboNode, ExpressionNode, TextNode } from "./node";
 
+// @ts-ignore
 const concatChar = d => { return d[0].join(""); };
 %}
 
-command             -> (string | expression | combo) (ws (string | expression | combo)):* {% 
+command             -> (string | expression | combo) (ws (string | expression | combo)):* {%
+  // @ts-ignore
   d => d[1].reduce((a, c) => a.concat(c[1]), d[0])
 %}
 
-combo               -> string expression        {% ComboNode.of(2) %}
-                     | expression string        {% ComboNode.of(2) %}
-                     | string expression string {% ComboNode.of(3) %}
+combo               -> string expression                 {% ComboNode.of(2) %}
+                     | expression string                 {% ComboNode.of(2) %}
+                     | string expression string          {% ComboNode.of(3) %}
 
 expression          -> "$(" expression_string ")"        {% ExpressionNode.of(1) %}
 expression_string   -> string (ws string):*              {%
+  // @ts-ignore
   d => d[1].reduce((a, c) => a.concat(c[1]), [d[0]])
 %}
 
@@ -31,7 +34,5 @@ single_quoted       -> single_quoted_value:+             {% concatChar %}
 single_quoted_value -> [^']                              
                      | "''"                              {% d => { return "'"; } %}
 
-unquoted_value      -> char:+                            {% concatChar %}
-
-char                -> [^\s"'()]
+unquoted_value      -> [^\s"'()]:+                       {% concatChar %}
 ws                  -> [\s]:+                            {% concatChar %}

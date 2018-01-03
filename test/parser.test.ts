@@ -4,7 +4,7 @@ import test, { Macro, TestContext } from 'ava';
 import { ComboNode, ExpressionNode, Node, TextNode } from '../src/node';
 import { parse } from '../src/parser';
 
-const macro: Macro<TestContext> = (t: TestContext, input: string, expected: Node[]) => {
+const macro: Macro<TestContext> = (t: TestContext, input: string, expected: Node<{}>[]) => {
     const result = parse(input);
     t.log(JSON.stringify(result));
     t.deepEqual(result, expected);

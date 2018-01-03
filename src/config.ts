@@ -1,19 +1,8 @@
 import * as fs from 'fs';
 
-export type Config = {
-    slack: {
-        access_token: string,
-    },
-    twitter: {
-        access_token: string,
-    },
-    aws: {
-        access_token: string,
-    },
-    dict: string,
-};
+export type Config = typeof DEFAULT;
 
-const DEFAULT: Config = {
+const DEFAULT = {
     slack: {
         access_token: '',
     },

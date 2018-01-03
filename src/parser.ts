@@ -4,7 +4,7 @@ import { Node } from './node';
 
 const GRAMMER = nearley.Grammar.fromCompiled(SPEC);
 
-export function parse(value: string): Node[] {
+export function parse<R>(value: string): Node<R>[] {
     const parser = new nearley.Parser(GRAMMER);
     const results = parser.feed(value).finish();
 
