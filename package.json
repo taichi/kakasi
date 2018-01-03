@@ -37,7 +37,8 @@
     "test": "ava-ts test/**/*.test.ts",
     "test:parser": "ava-ts test/**/parser.test.ts",
     "watch:test": "ava-ts --watch test/**/*.test.ts",
-    "cover": "nyc ava-ts test/**/*.test.ts"
+    "cover": "nyc ava-ts test/**/*.test.ts",
+    "clibot": "ts-node src/clibot.ts config.json"
   },
   "nyc": {
     "extension": [
