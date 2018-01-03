@@ -7,9 +7,11 @@
   "license": "MIT",
   "private": true,
   "dependencies": {
+    "mersenne-twister": "^1.1.0",
     "typescript": "^2.6.2"
   },
   "devDependencies": {
+    "@types/mersenne-twister": "^1.1.2",
     "@types/nearley": "^2.11.0",
     "@types/node": "^8.5.2",
     "ava": "^0.24.0",
