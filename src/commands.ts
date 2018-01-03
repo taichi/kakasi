@@ -1,4 +1,4 @@
-import { Dict, Echo } from './command';
+import { Dict, DictEd, Echo } from './command';
 import { Config } from './config';
 
 export interface ICommand {
@@ -47,6 +47,7 @@ export class CommandRepository implements ICommandRepository {
 
 export function core(config: Config): ICommandRepository {
     const cr = new CommandRepository(config, Dict);
+    cr.register('dict', DictEd);
     cr.register('echo', Echo);
 
     return cr;
