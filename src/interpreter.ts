@@ -1,8 +1,8 @@
 import { ICommand, ICommandRepository } from './commands';
+import { Context } from './context';
 import { ComboNode, ExpressionNode, IVisitor, Node, TextNode } from './node';
 
-// tslint:disable-next-line:no-any
-export function evaluate(repos: ICommandRepository, context: Map<string, any>, nodes: Node<Promise<string>>[]): Promise<ICommand> {
+export function evaluate(repos: ICommandRepository, context: Context, nodes: Node<Promise<string>>[]): Promise<ICommand> {
     const visitor = new Visitor(repos, context);
 
     const pros = nodes.map((n: Node<Promise<string>>): Promise<string> => n.accept(visitor));
@@ -14,11 +14,9 @@ export function evaluate(repos: ICommandRepository, context: Map<string, any>, n
 export class Visitor implements IVisitor<Promise<string>> {
 
     private repos: ICommandRepository;
-    // tslint:disable-next-line:no-any
-    private context: Map<string, any>;
+    private context: Context;
 
-    // tslint:disable-next-line:no-any
-    constructor(repos: ICommandRepository, context: Map<string, any>) {
+    constructor(repos: ICommandRepository, context: Context) {
         this.repos = repos;
         this.context = context;
     }

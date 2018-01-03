@@ -1,22 +1,17 @@
-import * as random from './random';
-
-import { core, ICommand, ICommandRepository } from './commands';
+import { core, ICommandRepository } from './commands';
 import { Config, load } from './config';
-import { evaluate } from './interpreter';
-import { parse } from './parser';
+import { Context } from './context';
+import { make } from './random';
 
 import * as readline from 'readline';
 
 export class CliBot {
-    // tslint:disable-next-line:no-any
-    private context: Map<string, any>;
+    private context: Context;
     private repos: ICommandRepository;
 
     constructor(config: Config) {
-        this.context = new Map();
-        this.context.set(random.KEY, random.make());
+        this.context = new Context();
         this.repos = core(config);
-
     }
 
     // tslint:disable:no-console
@@ -30,9 +25,7 @@ export class CliBot {
 
                 return;
             }
-            const nodes = parse(line.trim());
-            const pros = evaluate(this.repos, this.context, nodes)
-                .then((cmd: ICommand) => cmd.execute(this.context));
+            const pros = this.context.evaluate(this.repos, line.trim());
             Promise.resolve(pros).then((str: string) => {
                 console.log(str);
                 cli.prompt();

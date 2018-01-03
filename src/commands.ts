@@ -1,9 +1,9 @@
 import { Dict, DictEd, Echo } from './command';
 import { Config } from './config';
+import { Context } from './context';
 
 export interface ICommand {
-    // tslint:disable-next-line:no-any
-    execute(context: Map<string, any>): Promise<string>;
+    execute(context: Context): Promise<string>;
 }
 
 export type CommandFactory = (config: Config, cmd: string[]) => ICommand;

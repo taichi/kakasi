@@ -1,9 +1,9 @@
 // tslint:disable-next-line:import-name
 import test, { TestContext } from 'ava';
 
-import { CommandRepository, ICommand, ICommandRepository } from '../src/commands';
+import { CommandRepository } from '../src/commands';
 import { Config } from '../src/config';
-import { evaluate } from '../src/interpreter';
+import { Context } from '../src/context';
 import { parse } from '../src/parser';
 
 test((t: TestContext) => {
@@ -14,15 +14,12 @@ test((t: TestContext) => {
         cr.register(a, (config: Config, args: string[]) => { return { execute: () => Promise.resolve(`${a} ${args.join('_')}`) }; });
     }
 
-    const nodes = parse('aaa $(bbb ccc ddd) eee');
-    const ctx = new Map<string, {}>();
-    const cmd = evaluate(cr, ctx, nodes);
+    const ctx = new Context();
+    const cmd = ctx.evaluate(cr, 'aaa $(bbb ccc ddd) eee');
 
-    return cmd
-        .then((c: ICommand) => c.execute(ctx))
-        .then((str: string) => {
-            t.is(str, 'aaa bbb ccc_ddd_eee');
-        });
+    return cmd.then((str: string) => {
+        t.is(str, 'aaa bbb ccc_ddd_eee');
+    });
 });
 
 test((t: TestContext) => {
@@ -33,13 +30,10 @@ test((t: TestContext) => {
         cr.register(a, (config: Config, args: string[]) => { return { execute: () => Promise.resolve(`${a} ${args.join('_')}`) }; });
     }
 
-    const nodes = parse('aaa $(bbb ccc ddd)eee');
-    const ctx = new Map<string, {}>();
-    const cmd = evaluate(cr, ctx, nodes);
+    const ctx = new Context();
+    const cmd = ctx.evaluate(cr, 'aaa $(bbb ccc ddd)eee');
 
-    return cmd
-        .then((c: ICommand) => c.execute(ctx))
-        .then((str: string) => {
-            t.is(str, 'aaa bbb ccc_dddeee');
-        });
+    return cmd.then((str: string) => {
+        t.is(str, 'aaa bbb ccc_dddeee');
+    });
 });

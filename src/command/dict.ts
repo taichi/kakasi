@@ -1,6 +1,6 @@
 import { ICommand } from '../commands';
 import { Config } from '../config';
-import { KEY as RAND } from '../random';
+import { Context } from '../context';
 import { Echo } from './echo';
 
 export function factory(config: Config, cmd: string[]): ICommand {
@@ -28,8 +28,8 @@ export class InMemoryDict implements ICommand {
     constructor(cmd: string[]) {
         this.args = cmd;
     }
-    // tslint:disable-next-line:no-any
-    public execute(context: Map<string, any>): Promise<string> {
+
+    public execute(context: Context): Promise<string> {
         if (this.args.length < 1) {
             return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
@@ -41,7 +41,7 @@ export class InMemoryDict implements ICommand {
         const words = dict.get(key);
         if (this.args.length === 1) {
             if (words && 0 < words.length) {
-                const n = context.get(RAND)();
+                const n = context.rand();
 
                 return Promise.resolve(words[n % words.length]);
             }
@@ -51,14 +51,13 @@ export class InMemoryDict implements ICommand {
     }
 }
 
-// tslint:disable:no-any
 export class InMemoryDictEditor implements ICommand {
     private args: string[];
     constructor(cmd: string[]) {
         this.args = cmd;
     }
 
-    public execute(context: Map<string, any>): Promise<string> {
+    public execute(context: Context): Promise<string> {
         if (this.args.length < 1) {
             return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
@@ -92,7 +91,7 @@ export class InMemoryDictEditor implements ICommand {
         }
     }
 
-    public help(context: Map<string, any>): Promise<string> {
+    public help(context: Context): Promise<string> {
         // tslint:disable-next-line:no-multiline-string
         return Promise.resolve(`
 dict [list|add|delete|alias] ...
@@ -120,7 +119,7 @@ dict [list|add|delete|alias] ...
 `);
     }
 
-    public list(context: Map<string, any>): Promise<string> {
+    public list(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (0 < subargs.length) {
             const dict = context.get(KEY);
@@ -138,7 +137,7 @@ dict [list|add|delete|alias] ...
         return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 列挙対象を指定するための引数が 1 つ必要です。`);
     }
 
-    public add(context: Map<string, any>): Promise<string> {
+    public add(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (1 < subargs.length) {
             const dict = context.get(KEY);
@@ -160,7 +159,7 @@ dict [list|add|delete|alias] ...
         return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 登録対象の辞書及び登録する語の 2 つの引数が必要です。`);
     }
 
-    public remove(context: Map<string, any>): Promise<string> {
+    public remove(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (1 < subargs.length) {
             const dict = context.get(KEY);
@@ -179,7 +178,7 @@ dict [list|add|delete|alias] ...
         return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 削除対象の辞書及び削除する語の 2 つの引数が必要です。`);
     }
 
-    public alias(context: Map<string, any>): Promise<string> {
+    public alias(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (1 < subargs.length) {
             const dict = context.get(KEY);
