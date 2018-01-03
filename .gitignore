@@ -5,3 +5,5 @@ types/generated.d.ts
 /package-lock.json.md5
 lib
 /src/grammar.ts
+
+config\.json
