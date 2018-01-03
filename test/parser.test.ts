@@ -1,10 +1,10 @@
 // tslint:disable-next-line:import-name
 import test, { Macro, TestContext } from 'ava';
 
-import { ExpressionNode, TextNode } from '../src/node';
+import { ExpressionNode, Node, TextNode } from '../src/node';
 import { parse } from '../src/parser';
 
-const macro: Macro<TestContext> = (t: TestContext, input: string, expected: string[]) => {
+const macro: Macro<TestContext> = (t: TestContext, input: string, expected: Node[]) => {
     const result = parse(input);
     t.log(JSON.stringify(result));
     t.deepEqual(result, expected);
