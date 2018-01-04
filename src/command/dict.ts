@@ -4,7 +4,7 @@ import { Context } from '../context';
 import { Echo } from './echo';
 
 export function factory(config: Config, cmd: string[]): ICommand {
-    switch (config.dict) {
+    switch (config.storage) {
         case 'memory':
             return new InMemoryDict(cmd);
         default:
@@ -13,7 +13,7 @@ export function factory(config: Config, cmd: string[]): ICommand {
 }
 
 export function editor(config: Config, cmd: string[]): ICommand {
-    switch (config.dict) {
+    switch (config.storage) {
         case 'memory':
             return new InMemoryDictEditor(cmd);
         default:

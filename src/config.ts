@@ -12,7 +12,7 @@ const DEFAULT = {
     aws: {
         access_token: '',
     },
-    dict: 'memory',
+    storage: 'memory',
 };
 
 export function load(location: string): Config {
