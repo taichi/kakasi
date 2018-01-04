@@ -5,6 +5,7 @@ import { Echo } from '../src/command/echo';
 import { CommandRepository, core } from '../src/commands';
 import { Config } from '../src/config';
 import { Context } from '../src/context';
+import { dummy } from '../src/user';
 
 test((t: TestContext) => {
     const df = (config: Config, args: string[]) => { return { execute: () => Promise.resolve(args.join(' ')) }; };
@@ -15,9 +16,9 @@ test((t: TestContext) => {
         cr.register(a, (config: Config, args: string[]) => { return { execute: () => Promise.resolve(a) }; });
     }
 
-    const aaa = cr.find(['aaa', 'bbb', 'cccc']).execute(new Context())
+    const aaa = cr.find(['aaa', 'bbb', 'cccc']).execute(new Context(dummy()))
         .then((actual: string) => t.is(actual, 'aaa'));
-    const ddd = cr.find(['zzz', 'xxxx', 'yyyy']).execute(new Context())
+    const ddd = cr.find(['zzz', 'xxxx', 'yyyy']).execute(new Context(dummy()))
         .then((actual: string) => t.is(actual, 'zzz xxxx yyyy'));
 
     return Promise.all([aaa, ddd]);
@@ -28,7 +29,7 @@ test((t: TestContext) => {
     const cr = core({});
 
     return cr.find(['echo', 'aaa', 'bbb'])
-        .execute(new Context())
+        .execute(new Context(dummy()))
         .then((s: string) => {
             t.is(s, 'aaa bbb');
         });

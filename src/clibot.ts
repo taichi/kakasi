@@ -2,6 +2,7 @@ import { core, ICommandRepository } from './commands';
 import { Config, load } from './config';
 import { Context } from './context';
 import { make } from './random';
+import { dummy, IUser } from './user';
 
 import * as readline from 'readline';
 
@@ -9,8 +10,8 @@ export class CliBot {
     private context: Context;
     private repos: ICommandRepository;
 
-    constructor(config: Config) {
-        this.context = new Context();
+    constructor(user: IUser, config: Config) {
+        this.context = new Context(user);
         this.repos = core(config);
     }
 
@@ -42,4 +43,4 @@ export class CliBot {
     }
 }
 
-new CliBot(load(process.argv[2])).run();
+new CliBot(dummy(), load(process.argv[2])).run();
