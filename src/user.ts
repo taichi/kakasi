@@ -12,5 +12,5 @@ export function dummy(): IUser {
         displayName: 'John Doe',
         email: 'john@example.com',
         birthday: '03/21',
-    }
+    };
 }

@@ -1,4 +1,4 @@
-import { ICommand, ICommandRepository } from './commands';
+import { ICommand, ICommandRepository } from './command';
 import { Context } from './context';
 import { ComboNode, ExpressionNode, IVisitor, Node, TextNode } from './node';
 

@@ -1,6 +1,6 @@
-import { ICommand } from '../commands';
 import { Config } from '../config';
 import { Context } from '../context';
+import { ICommand } from './index';
 
 export function factory(config: Config, cmd: string[]): ICommand {
     return new Echo(cmd);

@@ -1,7 +1,7 @@
-import { ICommand } from '../commands';
 import { Config } from '../config';
 import { Context } from '../context';
 import { Echo } from './echo';
+import { ICommand } from './index';
 
 export function factory(config: Config, cmd: string[]): ICommand {
     switch (config.storage) {

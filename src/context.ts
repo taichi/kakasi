@@ -1,4 +1,4 @@
-import { ICommand, ICommandRepository } from './commands';
+import { ICommand, ICommandRepository } from './command';
 import { evaluate } from './interpreter';
 import { parse } from './parser';
 import { make, Random } from './random';

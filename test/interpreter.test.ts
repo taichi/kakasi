@@ -1,10 +1,9 @@
 // tslint:disable-next-line:import-name
 import test, { TestContext } from 'ava';
 
-import { CommandRepository } from '../src/commands';
+import { CommandRepository } from '../src/command';
 import { Config } from '../src/config';
 import { Context } from '../src/context';
-import { parse } from '../src/parser';
 import { dummy } from '../src/user';
 
 test((t: TestContext) => {
