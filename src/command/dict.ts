@@ -189,7 +189,7 @@ dict [list|add|delete|alias] ...
             }
 
             const existsWords = dict.get(exists);
-            if (existsWords && 0 < existsWords.length) {
+            if (!existsWords || existsWords.length < 1) {
                 return Promise.reject(`${exists} には語が登録されていません。語が登録されてる辞書のみを指定できます。`);
             }
 
