@@ -21,7 +21,7 @@ export function editor(config: Config, cmd: string[]): ICommand {
     }
 }
 
-const KEY = 'command/InMemoryDict';
+export const KEY = 'command/InMemoryDict';
 
 export class InMemoryDict implements ICommand {
     private args: string[];
@@ -33,13 +33,10 @@ export class InMemoryDict implements ICommand {
         if (this.args.length < 1) {
             return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
-        if (context.has(KEY) === false) {
-            context.set(KEY, new Map<string, string[]>());
-        }
         const dict = context.get(KEY);
         const key = this.args[0];
-        const words = dict.get(key);
-        if (this.args.length === 1) {
+        if (dict) {
+            const words = dict.get(key);
             if (words && 0 < words.length) {
                 const n = context.rand();
 
@@ -166,7 +163,7 @@ dict [list|add|delete|alias] ...
             const [key, exists] = subargs;
             const words = dict.get(key);
             if (!words || words.length < 1) {
-                return Promise.reject(`${key} には登録された語がありません。`);
+                return Promise.reject(`${key} という辞書が無いか、それに登録された語がありません。`);
             }
 
             const newone = words.filter((s: string) => s !== exists);
@@ -190,7 +187,7 @@ dict [list|add|delete|alias] ...
 
             const existsWords = dict.get(exists);
             if (!existsWords || existsWords.length < 1) {
-                return Promise.reject(`${exists} には語が登録されていません。語が登録されてる辞書のみを指定できます。`);
+                return Promise.reject(`${exists} には語が登録されていません。語が登録されている辞書のみを指定できます。`);
             }
 
             dict.set(newone, existsWords);

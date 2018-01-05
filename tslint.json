@@ -3,6 +3,7 @@
         "tslint-microsoft-contrib"
     ],
     "rules": {
+        "no-backbone-get-set-outside-model": false,
         "mocha-no-side-effect-code": false,
         "missing-jsdoc": false,
         "no-relative-imports": false,
