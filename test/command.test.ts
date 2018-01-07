@@ -6,7 +6,7 @@ import { Config } from '../src/config';
 import { Context } from '../src/context';
 import { dummy } from '../src/user';
 
-test((t: TestContext) => {
+test(async (t: TestContext) => {
     const df = (config: Config, args: string[]) => { return { execute: () => Promise.resolve(args.join(' ')) }; };
     // @ts-ignore
     const cr = new CommandRepository({}, df);
@@ -15,20 +15,21 @@ test((t: TestContext) => {
         cr.register(a, (config: Config, args: string[]) => { return { execute: () => Promise.resolve(a) }; });
     }
 
-    const aaa = cr.find(['aaa', 'bbb', 'cccc']).execute(new Context(dummy()))
+    const aaa = await cr.find(['aaa', 'bbb', 'cccc']);
+    await aaa.execute(new Context(dummy()))
         .then((actual: string) => t.is(actual, 'aaa'));
-    const ddd = cr.find(['zzz', 'xxxx', 'yyyy']).execute(new Context(dummy()))
+    const ddd = await cr.find(['zzz', 'xxxx', 'yyyy']);
+    await ddd.execute(new Context(dummy()))
         .then((actual: string) => t.is(actual, 'zzz xxxx yyyy'));
-
-    return Promise.all([aaa, ddd]);
 });
 
-test((t: TestContext) => {
+test(async (t: TestContext) => {
     // @ts-ignore
     const cr = core({});
 
-    return cr.find(['echo', 'aaa', 'bbb'])
-        .execute(new Context(dummy()))
+    const cmd = await cr.find(['echo', 'aaa', 'bbb']);
+
+    await cmd.execute(new Context(dummy()))
         .then((s: string) => {
             t.is(s, 'aaa bbb');
         });

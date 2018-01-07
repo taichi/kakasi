@@ -8,13 +8,13 @@ export interface ICommand {
     execute(context: Context): Promise<string>;
 }
 
-export type CommandFactory = (config: Config, cmd: string[]) => ICommand;
+export type CommandFactory = (config: Config, cmd: string[]) => Promise<ICommand>;
 
 export interface ICommandRepository {
 
     register(key: string, factory: CommandFactory): this;
 
-    find(command: string[]): ICommand;
+    find(command: string[]): Promise<ICommand>;
 }
 
 export class CommandRepository implements ICommandRepository {
@@ -35,7 +35,7 @@ export class CommandRepository implements ICommandRepository {
         return this;
     }
 
-    public find(command: string[]): ICommand {
+    public find(command: string[]): Promise<ICommand> {
         const [key, ...body] = command;
         const fn = this.commands.get(key);
         if (fn) {

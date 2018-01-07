@@ -1,23 +1,23 @@
 import { Config } from '../config';
 import { Context } from '../context';
-import { Echo } from './echo';
+import { factory as echoFactory } from './echo';
 import { ICommand } from './index';
 
-export function factory(config: Config, cmd: string[]): ICommand {
+export function factory(config: Config, cmd: string[]): Promise<ICommand> {
     switch (config.storage) {
         case 'memory':
-            return new InMemoryDict(cmd);
+            return Promise.resolve(new InMemoryDict(cmd));
         default:
-            return new Echo(cmd);
+            return echoFactory(config, cmd);
     }
 }
 
-export function editor(config: Config, cmd: string[]): ICommand {
+export function editor(config: Config, cmd: string[]): Promise<ICommand> {
     switch (config.storage) {
         case 'memory':
-            return new InMemoryDictEditor(cmd);
+            return Promise.resolve(new InMemoryDictEditor(cmd));
         default:
-            return new Echo(cmd);
+            return echoFactory(config, cmd);
     }
 }
 

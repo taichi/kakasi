@@ -2,7 +2,7 @@ import * as fs from 'fs';
 
 export type Config = typeof DEFAULT;
 
-const DEFAULT = {
+export const DEFAULT = {
     slack: {
         access_token: '',
     },

@@ -1,17 +1,28 @@
 // tslint:disable-next-line:import-name
 import test, { TestContext } from 'ava';
 
-import { CommandRepository } from '../src/command';
-import { Config } from '../src/config';
+import { CommandFactory, CommandRepository, ICommand } from '../src/command';
+import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
 import { dummy } from '../src/user';
 
 test((t: TestContext) => {
-    const df = (config: Config, args: string[]) => { return { execute: () => t.fail() }; };
-    //@ts-ignore
-    const cr = new CommandRepository({}, df);
+    const df: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+        return Promise.resolve({
+            execute: (): Promise<string> => {
+                t.fail();
+
+                return Promise.resolve('fail');
+            },
+        });
+    };
+    const cr = new CommandRepository(DEFAULT, df);
+
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        cr.register(a, (config: Config, args: string[]) => { return { execute: () => Promise.resolve(`${a} ${args.join('_')}`) }; });
+        const fn: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+            return Promise.resolve({ execute: () => Promise.resolve(`${a} ${args.join('_')}`) });
+        };
+        cr.register(a, fn);
     }
 
     const ctx = new Context(dummy());
@@ -23,11 +34,21 @@ test((t: TestContext) => {
 });
 
 test((t: TestContext) => {
-    const df = (config: Config, args: string[]) => { return { execute: () => t.fail() }; };
-    //@ts-ignore
-    const cr = new CommandRepository({}, df);
+    const df: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+        return Promise.resolve({
+            execute: (): Promise<string> => {
+                t.fail();
+
+                return Promise.resolve('fail');
+            },
+        });
+    };
+    const cr = new CommandRepository(DEFAULT, df);
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        cr.register(a, (config: Config, args: string[]) => { return { execute: () => Promise.resolve(`${a} ${args.join('_')}`) }; });
+        const fn: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+            return Promise.resolve({ execute: () => Promise.resolve(`${a} ${args.join('_')}`) });
+        };
+        cr.register(a, fn);
     }
 
     const ctx = new Context(dummy());

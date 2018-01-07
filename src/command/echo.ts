@@ -2,8 +2,8 @@ import { Config } from '../config';
 import { Context } from '../context';
 import { ICommand } from './index';
 
-export function factory(config: Config, cmd: string[]): ICommand {
-    return new Echo(cmd);
+export function factory(config: Config, cmd: string[]): Promise<ICommand> {
+    return Promise.resolve(new Echo(cmd));
 }
 
 export class Echo implements ICommand {
