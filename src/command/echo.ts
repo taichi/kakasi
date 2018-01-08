@@ -7,7 +7,7 @@ export function factory(config: Config, cmd: string[]): Promise<ICommand> {
 }
 
 export class Echo implements ICommand {
-    public args: string[];
+    private args: string[];
     constructor(cmd: string[]) {
         this.args = cmd;
     }
