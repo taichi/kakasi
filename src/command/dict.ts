@@ -2,7 +2,7 @@ import { Config } from '../config';
 import { Context } from '../context';
 import { SqliteDict, SqliteDictEditor } from './dict.sqlite';
 import { factory as echoFactory } from './echo';
-import { ICommand } from './index';
+import { ICommand, STORAGE } from './index';
 
 export function factory(config: Config, cmd: string[]): Promise<ICommand> {
     switch (config.storage) {
@@ -26,33 +26,31 @@ export function editor(config: Config, cmd: string[]): Promise<ICommand> {
     }
 }
 
-export const KEY = 'command/dict/memory';
-
 // tslint:disable-next-line:no-multiline-string
 export const HELP = `
-    dict [list|add|delete|alias] ...
-      [list|ls] 辞書名
+dict [list|add|delete|alias|help] ...
+    [list|ls] 辞書名
         指定した辞書に登録されている語を列挙します。
-      [add|put|push] 辞書名 語
+    [add|put|push] 辞書名 語
         指定した辞書に語を登録します。
-      [delete|remove|del|rm] 辞書名 語
+    [delete|remove|del|rm] 辞書名 語
         指定した辞書から語を削除します。
-      [alias|ln] 辞書名 辞書名
+    [alias|ln] 辞書名 辞書名
         最初に指定した辞書名を、後に指定した辞書としても利用できるようにします。
         最初に指定した辞書に語が登録されていない場合のみ使えます。
-      [help|?]
+    [help|?]
         このヘルプを表示します。
 
-    コマンド例:
-      dict list 駅
+コマンド例:
+    dict list 駅
         駅という辞書に登録されている語を列挙します。
-      dict add 駅 新宿
+    dict add 駅 新宿
         駅という辞書に新宿という語を登録します。
-      dict rm 駅 新宿
+    dict rm 駅 新宿
         駅という辞書から新宿という語を削除します。
-      dict ln 駅名 駅
+    dict ln 駅名 駅
         駅という辞書を駅名という名前でも利用できるようにします。
-    `;
+`;
 
 export class InMemoryDict implements ICommand {
     private args: string[];
@@ -64,7 +62,7 @@ export class InMemoryDict implements ICommand {
         if (this.args.length < 1) {
             return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
-        const dict = context.get(KEY);
+        const dict = context.get(STORAGE);
         const key = this.args[0];
         if (dict) {
             const words = dict.get(key);
@@ -89,13 +87,12 @@ export class InMemoryDictEditor implements ICommand {
         if (this.args.length < 1) {
             return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
-        if (context.has(KEY) === false) {
-            context.set(KEY, new Map<string, string[]>());
+        if (context.has(STORAGE) === false) {
+            context.set(STORAGE, new Map<string, string[]>());
         }
 
         const subcmd = this.args[0];
-        const newargs = this.args.slice(1);
-        switch (subcmd) {
+        switch (subcmd.toLocaleLowerCase()) {
             case 'help':
             case '?':
                 return this.help(context);
@@ -128,7 +125,7 @@ export class InMemoryDictEditor implements ICommand {
         if (subargs.length < 1) {
             return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 列挙対象を指定するための引数が 1 つ必要です。`);
         }
-        const dict = context.get(KEY);
+        const dict = context.get(STORAGE);
         const key = subargs[0];
         const words = dict.get(key);
         if (words && 0 < words.length) {
@@ -145,7 +142,7 @@ export class InMemoryDictEditor implements ICommand {
         if (subargs.length < 2) {
             return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 登録対象の辞書及び登録する語の 2 つの引数が必要です。`);
         }
-        const dict = context.get(KEY);
+        const dict = context.get(STORAGE);
         const [key, newone] = subargs;
         let words = dict.get(key);
         if (!words) {
@@ -167,7 +164,7 @@ export class InMemoryDictEditor implements ICommand {
         if (subargs.length < 2) {
             return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 削除対象の辞書及び削除する語の 2 つの引数が必要です。`);
         }
-        const dict = context.get(KEY);
+        const dict = context.get(STORAGE);
         const [key, exists] = subargs;
         const words = dict.get(key);
         if (!words || words.length < 1) {
@@ -185,7 +182,7 @@ export class InMemoryDictEditor implements ICommand {
         if (subargs.length < 2) {
             return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 新しい辞書名と既存の辞書名の 2 つの引数が必要です。`);
         }
-        const dict = context.get(KEY);
+        const dict = context.get(STORAGE);
         const [newone, exists] = subargs;
         const words = dict.get(newone);
         if (words && 0 < words.length) {

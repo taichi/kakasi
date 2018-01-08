@@ -1,12 +1,10 @@
 import { Config } from '../config';
 import { Context } from '../context';
-import { ICommand } from './index';
+import { ICommand, STORAGE } from './index';
 
 import { HELP } from './dict';
 
 import * as sqlite from 'sqlite';
-
-export const KEY = 'command/dict/sqlite';
 
 // tslint:disable-next-line:no-multiline-string
 const BASE_WORDS = `
@@ -87,7 +85,7 @@ export class SqliteDict implements ICommand {
             return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
 
-        const db: sqlite.Database = context.get(KEY);
+        const db: sqlite.Database = context.get(STORAGE);
         if (!db) {
             return Promise.reject('データベースがセットアップされていません。');
         }
@@ -120,14 +118,13 @@ export class SqliteDictEditor implements ICommand {
             return Promise.reject('dict コマンドは引数が一つ以上必要です。');
         }
 
-        const db: sqlite.Database = context.get(KEY);
+        const db: sqlite.Database = context.get(STORAGE);
         if (!db) {
             return Promise.reject('データベースがセットアップされていません。');
         }
 
         const subcmd = this.args[0];
-        const newargs = this.args.slice(1);
-        switch (subcmd) {
+        switch (subcmd.toLowerCase()) {
             case 'help':
             case '?':
                 return this.help(context);
@@ -158,7 +155,7 @@ export class SqliteDictEditor implements ICommand {
     public list(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (0 < subargs.length) {
-            const db: sqlite.Database = context.get(KEY);
+            const db: sqlite.Database = context.get(STORAGE);
             const key = subargs[0];
 
             return db.all(WORDS, key, key).then((rows: { word: string }[]) => {
@@ -180,7 +177,7 @@ export class SqliteDictEditor implements ICommand {
             return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 登録対象の辞書及び登録する語の 2 つの引数が必要です。`);
         }
 
-        const db: sqlite.Database = context.get(KEY);
+        const db: sqlite.Database = context.get(STORAGE);
         const [key, newone] = subargs;
 
         const id = await getOrCreateKeyword(db, key);
@@ -200,7 +197,7 @@ export class SqliteDictEditor implements ICommand {
             return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 削除対象の辞書及び削除する語の 2 つの引数が必要です。`);
         }
 
-        const db: sqlite.Database = context.get(KEY);
+        const db: sqlite.Database = context.get(STORAGE);
         const [key, exists] = subargs;
 
         const wdrow = await db.get(EXISTS_WORD, key, exists, key, exists);
@@ -218,7 +215,7 @@ export class SqliteDictEditor implements ICommand {
         if (subargs.length < 2) {
             return Promise.reject(`dictコマンドの ${this.args[0]} サブコマンドには 新しい辞書名と既存の辞書名の 2 つの引数が必要です。`);
         }
-        const db: sqlite.Database = context.get(KEY);
+        const db: sqlite.Database = context.get(STORAGE);
         const [newone, exists] = subargs;
         const newrow = await db.get<{ cnt: number }>(COUNT_NEW_WORD, newone);
         if (newrow && 0 < newrow.cnt) {

@@ -4,6 +4,8 @@ import { factory as Echo } from './echo';
 import { Config } from '../config';
 import { Context } from '../context';
 
+export const STORAGE = 'kakasi/storage';
+
 export interface ICommand {
     execute(context: Context): Promise<string>;
 }

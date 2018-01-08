@@ -5,16 +5,22 @@ import * as sqlite from 'sqlite';
 import { promisify } from 'util';
 
 import { Buffer } from 'buffer';
-import { KEY, SqliteDict, SqliteDictEditor } from '../../src/command/dict.sqlite';
+import { SqliteDict, SqliteDictEditor } from '../../src/command/dict.sqlite';
 import { Context } from '../../src/context';
 import { dummy } from '../../src/user';
+
+import { STORAGE } from '../../src/command';
 
 const readFile = promisify(fs.readFile);
 const unlink = promisify(fs.unlink);
 
-const DATABASE = 'test/kakasi.test.sqlite';
+const DATABASE = 'test/command/dict.test.sqlite';
 
 test.before(async (t: TestContext) => {
+    await unlink(DATABASE).catch(() => {
+        // suppress error
+    });
+
     const ddl = await readFile('src/command/dict.sqlite.sql');
     const data = await readFile('test/command/dict.sqlite.test.sql');
     const db = await sqlite.open(DATABASE);
@@ -68,7 +74,7 @@ test.afterEach((t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDict(['ppp']);
 
@@ -77,7 +83,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDict(['bbb']);
 
@@ -86,7 +92,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDict(['eee']);
 
@@ -95,7 +101,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDict(['aaa']);
     const value = await dict.execute(context);
@@ -131,7 +137,7 @@ test((t: TestContext) => {
 
 test((t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['help']);
 
@@ -141,7 +147,7 @@ test((t: SqliteContext) => {
 
 test((t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['list']);
 
@@ -155,7 +161,7 @@ test((t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['list', 'aaa']);
 
@@ -164,7 +170,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['list', 'ccc']);
 
@@ -173,7 +179,7 @@ test(async (t: SqliteContext) => {
 
 test((t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['add', 'aaa']);
 
@@ -187,7 +193,7 @@ test((t: SqliteContext) => {
 
 test((t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['add', 'aaa', 'zzz']);
 
@@ -201,7 +207,7 @@ test((t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['add', 'ggg', 'zzz']);
 
@@ -210,7 +216,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['remove', 'aaa']);
 
@@ -224,7 +230,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['remove', 'aaa', 'ppp']);
 
@@ -238,7 +244,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['remove', 'ccc', 'ppp']);
 
@@ -252,7 +258,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['remove', 'aaa', 'zzz']);
 
@@ -263,7 +269,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['alias', 'ggg']);
 
@@ -277,7 +283,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['alias', 'aaa', 'bbb']);
 
@@ -291,7 +297,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['alias', 'ggg', 'ccc']);
 
@@ -305,7 +311,7 @@ test(async (t: SqliteContext) => {
 
 test(async (t: SqliteContext) => {
     const context = new Context(dummy());
-    context.set(KEY, t.context.db);
+    context.set(STORAGE, t.context.db);
 
     const dict = new SqliteDictEditor(['alias', 'ggg', 'aaa']);
 

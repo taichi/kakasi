@@ -9,4 +9,5 @@ lib
 config\.json
 
 kakasi\.sqlite
-/test/kakasi.test.sqlite
+/test/command/dict.test.sqlite
+/test/command/user.test.sqlite

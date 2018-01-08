@@ -1,7 +1,8 @@
 // tslint:disable-next-line:import-name
 import test, { TestContext } from 'ava';
 
-import { InMemoryDict, InMemoryDictEditor, KEY } from '../../src/command/dict';
+import { STORAGE } from '../../src/command';
+import { InMemoryDict, InMemoryDictEditor } from '../../src/command/dict';
 import { Context } from '../../src/context';
 import { dummy } from '../../src/user';
 
@@ -19,7 +20,7 @@ test((t: TestContext) => {
     const map = new Map<string, string[]>();
     map.set('aaa', ['bbb']);
 
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDict(['aaa']);
 
@@ -32,7 +33,7 @@ test((t: TestContext) => {
     const map = new Map<string, string[]>();
     map.set('aaa', []);
 
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDict(['aaa']);
 
@@ -44,7 +45,7 @@ test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
 
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDict(['aaa']);
 
@@ -64,7 +65,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['help']);
 
@@ -74,7 +75,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['list']);
 
@@ -86,7 +87,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['list', 'aaa']);
 
@@ -99,7 +100,7 @@ test((t: TestContext) => {
     const map = new Map<string, string[]>();
     const a = ['bbb', 'ccc', 'ddd', 'eee'];
     map.set('aaa', a);
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['list', 'aaa']);
 
@@ -110,7 +111,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['add', 'aaa']);
 
@@ -124,7 +125,7 @@ test((t: TestContext) => {
     const map = new Map<string, string[]>();
     const a = ['bbb', 'ccc', 'ddd', 'eee'];
     map.set('aaa', a);
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['add', 'aaa', 'bbb']);
 
@@ -136,7 +137,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['add', 'aaa', 'bbb']);
 
@@ -147,7 +148,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['remove', 'aaa']);
 
@@ -159,7 +160,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['remove', 'aaa', 'bbb']);
 
@@ -172,7 +173,7 @@ test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
     map.set('aaa', ['bbb', 'ccc']);
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['remove', 'aaa', 'bbb']);
 
@@ -186,7 +187,7 @@ test((t: TestContext) => {
 test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['alias', 'aaa']);
 
@@ -199,7 +200,7 @@ test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
     map.set('bbb', []);
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['alias', 'aaa', 'bbb']);
 
@@ -212,7 +213,7 @@ test((t: TestContext) => {
     const context = new Context(dummy());
     const map = new Map<string, string[]>();
     map.set('aaa', ['bbb']);
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['alias', 'aaa', 'bbb']);
 
@@ -226,7 +227,7 @@ test((t: TestContext) => {
     const map = new Map<string, string[]>();
     map.set('aaa', []);
     map.set('bbb', ['ccc']);
-    context.set(KEY, map);
+    context.set(STORAGE, map);
 
     const dict = new InMemoryDictEditor(['alias', 'aaa', 'bbb']);
 
