@@ -1,5 +1,6 @@
 import { Config } from '../config';
 import { Context } from '../context';
+import { SqliteDict, SqliteDictEditor } from './dict.sqlite';
 import { factory as echoFactory } from './echo';
 import { ICommand } from './index';
 
@@ -7,6 +8,8 @@ export function factory(config: Config, cmd: string[]): Promise<ICommand> {
     switch (config.storage) {
         case 'memory':
             return Promise.resolve(new InMemoryDict(cmd));
+        case 'sqlite':
+            return Promise.resolve(new SqliteDict(cmd));
         default:
             return echoFactory(config, cmd);
     }
@@ -16,6 +19,8 @@ export function editor(config: Config, cmd: string[]): Promise<ICommand> {
     switch (config.storage) {
         case 'memory':
             return Promise.resolve(new InMemoryDictEditor(cmd));
+        case 'sqlite':
+            return Promise.resolve(new SqliteDictEditor(cmd));
         default:
             return echoFactory(config, cmd);
     }

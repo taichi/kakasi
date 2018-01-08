@@ -7,3 +7,6 @@ lib
 /src/grammar.ts
 
 config\.json
+
+kakasi\.sqlite
+/test/kakasi.test.sqlite

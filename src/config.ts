@@ -1,6 +1,22 @@
 import * as fs from 'fs';
 
-export type Config = typeof DEFAULT;
+export type Config = {
+    slack: {
+        access_token: string,
+    },
+    twitter: {
+        access_token: string,
+    },
+    aws: {
+        access_token: string,
+    },
+    storage: 'memory' | 'sqlite',
+    sqlite?: {
+        filename: string,
+        verbose: boolean,
+        cached: boolean,
+    },
+};
 
 export const DEFAULT = {
     slack: {
@@ -13,6 +29,11 @@ export const DEFAULT = {
         access_token: '',
     },
     storage: 'memory',
+    sqlite: {
+        filename: 'kakasi.sqlite',
+        verbose: false,
+        cached: false,
+    },
 };
 
 export function load(location: string): Config {
