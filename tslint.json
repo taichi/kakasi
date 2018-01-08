@@ -27,7 +27,8 @@
     },
     "linterOptions": {
         "exclude": [
-            "src/grammar.ts"
+            "src/grammar.ts",
+            "src/bot/slackbot.ts"
         ]
     }
 }

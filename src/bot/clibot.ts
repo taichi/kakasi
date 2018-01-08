@@ -1,7 +1,6 @@
 import { core, ICommandRepository } from '../command';
 import { Config, load } from '../config';
 import { Context } from '../context';
-import { make } from '../random';
 import { dummy, IUser } from '../user';
 
 import * as readline from 'readline';
