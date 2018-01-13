@@ -93,9 +93,6 @@ export class InMemoryDictEditor implements ICommand {
 
         const subcmd = this.args[0];
         switch (subcmd.toLocaleLowerCase()) {
-            case 'help':
-            case '?':
-                return this.help(context);
             case 'list':
             case 'ls':
                 return this.list(context);
@@ -111,6 +108,8 @@ export class InMemoryDictEditor implements ICommand {
             case 'alias':
             case 'ln':
                 return this.alias(context);
+            case 'help':
+            case '?':
             default:
                 return this.help(context);
         }

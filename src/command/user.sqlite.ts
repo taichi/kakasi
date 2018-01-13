@@ -75,9 +75,6 @@ export class User implements ICommand {
 
         const subcmd = this.args[0];
         switch (subcmd.toLowerCase()) {
-            case 'help':
-            case '?':
-                return this.help(context);
             case 'add':
             case 'join':
                 return this.add(context);
@@ -85,6 +82,8 @@ export class User implements ICommand {
                 return this.update(context);
             case 'info':
                 return this.info(context);
+            case 'help':
+            case '?':
             default:
                 return this.help(context);
         }
