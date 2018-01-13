@@ -1,51 +1,24 @@
 // tslint:disable-next-line:import-name
-import test, { Context as AC, TestContext } from 'ava';
-import * as fs from 'fs';
-import * as sqlite from 'sqlite';
-import { promisify } from 'util';
+import test, { TestContext } from 'ava';
 
-import { Buffer } from 'buffer';
 import { STORAGE } from '../../src/command';
-import { User } from '../../src/command/user.sqlite';
 import { Context } from '../../src/context';
-import { dummy } from '../../src/user';
 
-const readFile = promisify(fs.readFile);
-const unlink = promisify(fs.unlink);
+import { dummy, makeDbRoom, SqliteContext } from '../testutil';
 
-const DATABASE = 'test/command/user.test.sqlite';
+import { User } from '../../src/command/user.sqlite';
 
-type SqliteContext = TestContext & AC<{
-    db: sqlite.Database,
-}>;
+const DB_ROOM = makeDbRoom('test/command/user.test.sqlite');
 
 test.before(async (t: TestContext) => {
-    await unlink(DATABASE).catch(() => {
-        // suppress error
-    });
-
-    const ddl = await readFile('src/command/user.sqlite.sql');
-    const data = await readFile('test/command/user.sqlite.test.sql');
-    const db: sqlite.Database = await sqlite.open(DATABASE);
-
-    await db.exec(ddl.toString('utf-8'));
-    await db.exec(data.toString('utf-8'));
-    await db.close();
+    await DB_ROOM.setup('src/command/user.sqlite.sql', 'test/command/user.sqlite.test.sql');
 });
 
-test.beforeEach(async (t: SqliteContext) => {
-    const db = await sqlite.open(DATABASE);
-    db.on('trace', (sql: string) => t.log(sql));
-    t.context.db = db;
-});
+test.beforeEach(DB_ROOM.open);
 
-test.afterEach(async (t: SqliteContext) => {
-    await t.context.db.close();
-});
+test.afterEach(DB_ROOM.close);
 
-test.after(async (t: TestContext) => {
-    await unlink(DATABASE);
-});
+test.after(DB_ROOM.teardown);
 
 test((t: TestContext) => {
     const context = new Context(dummy());

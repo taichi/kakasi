@@ -1,7 +1,9 @@
-import { core, ICommandRepository } from '../command';
-import { Config, load } from '../config';
-import { Context } from '../context';
-import { dummy, IUser } from '../user';
+import { core, ICommandRepository } from '../../src/command';
+import { Config, load } from '../../src/config';
+import { Context } from '../../src/context';
+import { IUser } from '../../src/user';
+
+import { dummy } from '../testutil';
 
 import * as readline from 'readline';
 

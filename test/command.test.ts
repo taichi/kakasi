@@ -4,7 +4,7 @@ import test, { TestContext } from 'ava';
 import { CommandRepository, core } from '../src/command';
 import { Config } from '../src/config';
 import { Context } from '../src/context';
-import { dummy } from '../src/user';
+import { dummy } from './testutil';
 
 test(async (t: TestContext) => {
     const df = (config: Config, args: string[]) => { return { execute: () => Promise.resolve(args.join(' ')) }; };

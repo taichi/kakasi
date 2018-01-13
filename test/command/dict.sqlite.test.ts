@@ -1,38 +1,24 @@
 // tslint:disable-next-line:import-name
-import test, { Context as AC, TestContext } from 'ava';
-import * as fs from 'fs';
-import * as sqlite from 'sqlite';
-import { promisify } from 'util';
-
-import { Buffer } from 'buffer';
-import { SqliteDict, SqliteDictEditor } from '../../src/command/dict.sqlite';
-import { Context } from '../../src/context';
-import { dummy } from '../../src/user';
+import test, { TestContext } from 'ava';
 
 import { STORAGE } from '../../src/command';
+import { Context } from '../../src/context';
 
-const readFile = promisify(fs.readFile);
-const unlink = promisify(fs.unlink);
+import { dummy, makeDbRoom, SqliteContext } from '../testutil';
 
-const DATABASE = 'test/command/dict.test.sqlite';
+import { SqliteDict, SqliteDictEditor } from '../../src/command/dict.sqlite';
+
+const DB_ROOM = makeDbRoom('test/command/dict.test.sqlite');
 
 test.before(async (t: TestContext) => {
-    await unlink(DATABASE).catch(() => {
-        // suppress error
-    });
-
-    const ddl = await readFile('src/command/dict.sqlite.sql');
-    const data = await readFile('test/command/dict.sqlite.test.sql');
-    const db = await sqlite.open(DATABASE);
-
-    await db.exec(ddl.toString('utf-8'));
-    await db.exec(data.toString('utf-8'));
-    await db.close();
+    await DB_ROOM.setup('src/command/dict.sqlite.sql', 'test/command/dict.sqlite.test.sql');
 });
 
-test.after(async (t: TestContext) => {
-    await unlink(DATABASE);
-});
+test.beforeEach(DB_ROOM.open);
+
+test.afterEach(DB_ROOM.close);
+
+test.after(DB_ROOM.teardown);
 
 test((t: TestContext) => {
     const context = new Context(dummy());
@@ -58,18 +44,6 @@ test((t: TestContext) => {
             t.falsy(msg.message);
             t.truthy(msg);
         });
-});
-
-type SqliteContext = TestContext & AC<{
-    db: sqlite.Database,
-}>;
-
-test.beforeEach(async (t: SqliteContext) => {
-    t.context.db = await sqlite.open(DATABASE);
-});
-
-test.afterEach((t: SqliteContext) => {
-    return t.context.db.close();
 });
 
 test(async (t: SqliteContext) => {
@@ -135,7 +109,7 @@ test((t: TestContext) => {
         });
 });
 
-test((t: SqliteContext) => {
+test('help', (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -145,7 +119,7 @@ test((t: SqliteContext) => {
         .then((msg: string) => t.truthy(msg));
 });
 
-test((t: SqliteContext) => {
+test.serial('list', (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -159,7 +133,7 @@ test((t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test.serial('list', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -168,7 +142,7 @@ test(async (t: SqliteContext) => {
     t.is(await dict.execute(context), ['xxx', 'yyy', 'zzz'].join('\n'));
 });
 
-test(async (t: SqliteContext) => {
+test.serial('list', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -177,7 +151,7 @@ test(async (t: SqliteContext) => {
     t.is(await dict.execute(context), ['xxx', 'yyy', 'zzz'].join('\n'));
 });
 
-test((t: SqliteContext) => {
+test('add', (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -191,7 +165,7 @@ test((t: SqliteContext) => {
         });
 });
 
-test((t: SqliteContext) => {
+test.serial('add', (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -205,7 +179,7 @@ test((t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test.serial('add', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -214,7 +188,7 @@ test(async (t: SqliteContext) => {
     t.truthy(await dict.execute(context));
 });
 
-test(async (t: SqliteContext) => {
+test('remove', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -228,7 +202,7 @@ test(async (t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test('remove', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -242,7 +216,7 @@ test(async (t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test('remove', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -256,7 +230,7 @@ test(async (t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test.serial('remove', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -267,7 +241,7 @@ test(async (t: SqliteContext) => {
     t.is(row.cnt, 2);
 });
 
-test(async (t: SqliteContext) => {
+test('alias', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -281,7 +255,7 @@ test(async (t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test('alias', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -295,7 +269,7 @@ test(async (t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test('alias', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
@@ -309,11 +283,11 @@ test(async (t: SqliteContext) => {
         });
 });
 
-test(async (t: SqliteContext) => {
+test.serial('alias', async (t: SqliteContext) => {
     const context = new Context(dummy());
     context.set(STORAGE, t.context.db);
 
-    const dict = new SqliteDictEditor(['alias', 'ggg', 'aaa']);
+    const dict = new SqliteDictEditor(['alias', 'hhh', 'aaa']);
 
     t.truthy(await dict.execute(context));
 });

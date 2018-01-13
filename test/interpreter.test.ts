@@ -4,7 +4,7 @@ import test, { TestContext } from 'ava';
 import { CommandFactory, CommandRepository, ICommand } from '../src/command';
 import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
-import { dummy } from '../src/user';
+import { dummy } from './testutil';
 
 test((t: TestContext) => {
     const df: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {

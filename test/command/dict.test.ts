@@ -4,7 +4,7 @@ import test, { TestContext } from 'ava';
 import { STORAGE } from '../../src/command';
 import { InMemoryDict, InMemoryDictEditor } from '../../src/command/dict';
 import { Context } from '../../src/context';
-import { dummy } from '../../src/user';
+import { dummy } from '../testutil';
 
 test((t: TestContext) => {
     const context = new Context(dummy());

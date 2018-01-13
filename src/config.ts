@@ -18,7 +18,7 @@ export type Config = {
     },
 };
 
-export const DEFAULT = {
+export const DEFAULT: Config = {
     slack: {
         access_token: '',
     },

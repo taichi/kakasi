@@ -3,7 +3,7 @@ import test, { TestContext } from 'ava';
 
 import { Echo } from '../../src/command/echo';
 import { Context } from '../../src/context';
-import { dummy } from '../../src/user';
+import { dummy } from '../testutil';
 
 test((t: TestContext) => {
     const cmd = ['aaa', 'bbb', 'ccc'];
