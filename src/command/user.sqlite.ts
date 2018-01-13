@@ -21,7 +21,7 @@ export function factory(config: Config, cmd: string[]): Promise<ICommand> {
 // tslint:disable-next-line:no-multiline-string
 const HELP = `
 user [add|update name|update birthday|info|list|help]
-    [add|join] ユーザ名? 誕生日?
+    [add|join] [myself|me|ユーザ名]? 誕生日?
         ユーザを登録します。新規のユーザ登録は本人のみができます。
         ユーザ名を省略してユーザ登録した場合、SlackのDisplayNameをユーザ名として使います。
         誕生日は、MMDD形式で指定して下さい。
