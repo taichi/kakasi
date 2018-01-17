@@ -245,6 +245,52 @@ test.serial('update birthday', async (t: SqliteContext) => {
     t.is(data.birthday, '0421');
 });
 
+test.serial('alias', async (t: SqliteContext) => {
+    const context = new Context(dummy());
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['ln']);
+
+    return user.execute(context)
+        .then(() => t.fail())
+        .catch((msg: Error) => {
+            t.falsy(msg.message);
+            t.truthy(msg);
+        });
+});
+
+test.serial('alias', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'aaa',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['alias', 'xyxyx']);
+
+    t.truthy(await user.execute(context));
+    const data = await t.context.db
+        .get<{ name: string }>('select * from user_alias where userid = ? and name = ?', context.user.id, 'xyxyx');
+    t.is(data.name, 'xyxyx');
+});
+
+test.serial('alias', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'aaa',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['alias', 'ddd', 'zyzxxx']);
+
+    t.truthy(await user.execute(context));
+    const data = await t.context.db
+        .get<{ name: string }>('select * from user_alias where userid = ? and name = ?', 'ccc', 'zyzxxx');
+    t.is(data.name, 'zyzxxx');
+});
+
 test.serial('info', async (t: SqliteContext) => {
     const context = new Context({
         id: 'zzz',

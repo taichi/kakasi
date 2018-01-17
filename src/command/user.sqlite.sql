@@ -5,3 +5,11 @@ create table user (
     birthday  text,
     timestamp timestamp default current_timestamp
 );
+
+create table user_alias (
+    id              integer primary key autoincrement,
+    userid          text not null,
+    userid_register text not null,
+    name            text not null unique,
+    timestamp       timestamp default current_timestamp
+);

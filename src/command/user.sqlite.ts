@@ -1,11 +1,8 @@
 import { Config } from '../config';
 import { Context } from '../context';
-import { transaction } from '../tx.sqlite';
+import { IUserService, SqliteUserService, UserModel } from '../service/user';
 import { factory as echoFactory } from './echo';
 import { ICommand, STORAGE } from './index';
-
-import * as moment from 'moment';
-import * as sqlite from 'sqlite';
 
 export function factory(config: Config, cmd: string[]): Promise<ICommand> {
     switch (config.storage) {
@@ -20,16 +17,19 @@ export function factory(config: Config, cmd: string[]): Promise<ICommand> {
 
 // tslint:disable-next-line:no-multiline-string
 const HELP = `
-user [add|update name|update birthday|info|list|help]
+user [add|update name|update birthday|alias|info|list|help]
     [add|join] [myself|me|ユーザ名]? 誕生日?
         ユーザを登録します。新規のユーザ登録は本人のみができます。
-        ユーザ名を省略してユーザ登録した場合、SlackのDisplayNameをユーザ名として使います。
+        myselfやmeをユーザ名として指定したり、ユーザ名を省略してユーザ登録した場合、SlackのDisplayNameをユーザ名として使います。
         誕生日は、MMDD形式で指定して下さい。
     update name 新しいユーザ名
         ユーザ名を変更します。ユーザ名の変更は本人のみができます。
     update birthday 誕生日
         ユーザの誕生日を変更します。誕生日の変更は本人のみができます。
         誕生日は、MMDD形式で指定して下さい。
+    [alias|ln] ユーザ名? ユーザ名
+        最初に指定したユーザ名を、後に指定したユーザ名としても利用できるようにします。
+        最初のユーザ名を省略した場合、自分のユーザ名を、指定したユーザ名としても利用できるようにします。
     info [myself|me|ユーザ名]?
         ユーザの登録されている情報を表示します。
         myselfやmeをユーザ名として指定したり、ユーザ名の指定を省略した場合、コマンドを実行したユーザの情報を更新します。
@@ -48,17 +48,14 @@ user [add|update name|update birthday|info|list|help]
         johnのユーザ名をsmithに変更します。
     user update birthday me 1227
         コマンドを実行したユーザの誕生日を12月27に変更します。
+    user alias smith
+        コマンドを実行したユーザをユーザ名 smith としても扱います。
+    user alias ricky peet
+        ricky を peet としても扱います。
 `;
 
-type UserModel = {
-    userid: string,
-    name: string,
-    birthday: string,
-    timestamp: string,
-};
-
 export class User implements ICommand {
-    public args: string[];
+    private args: string[];
     constructor(cmd: string[]) {
         this.args = cmd;
     }
@@ -68,20 +65,24 @@ export class User implements ICommand {
             return Promise.reject('user コマンドは引数が一つ以上必要です。');
         }
 
-        const db: sqlite.Database = context.get(STORAGE);
+        const db = context.get(STORAGE);
         if (!db) {
             return Promise.reject('データベースがセットアップされていません。');
         }
+        const service = new SqliteUserService(() => db);
 
         const subcmd = this.args[0];
         switch (subcmd.toLowerCase()) {
             case 'add':
             case 'join':
-                return this.add(context);
+                return this.add(context, service);
             case 'update':
-                return this.update(context);
+                return this.update(context, service);
+            case 'alias':
+            case 'ln':
+                return this.alias(context, service);
             case 'info':
-                return this.info(context);
+                return this.info(context, service);
             case 'help':
             case '?':
             default:
@@ -93,57 +94,51 @@ export class User implements ICommand {
         return Promise.resolve(HELP);
     }
 
-    @transaction(STORAGE)
-    public async add(context: Context): Promise<string> {
+    public async add(context: Context, service: IUserService): Promise<string> {
         const subargs = this.args.slice(1);
         const info = this.extractAddParams(context, subargs);
 
-        if (moment(info.birthday, 'MMDD').isValid() === false) {
-            return Promise.reject(`${info.birthday} は正しくない日付です。 MMDD形式で指定して下さい。`);
-        }
-
-        const db: sqlite.Database = context.get(STORAGE);
-        const row = await db.get<{ name: string }>('select name from user where userid = ?', context.user.id);
-        if (row && row.name) {
-            return Promise.reject(`${info.name} は、${row.name} として既に登録済みです。ユーザ名を変更するなら user update コマンドを使って下さい。`);
-        }
-
-        const namerow = await db.get<{ cnt: number }>('select count(id) cnt from user where name = ?', info.name);
-        if (namerow && 0 < namerow.cnt) {
-            return Promise.reject(`${info.name} は、他のユーザが利用中のユーザ名です。`);
-        }
-
-        const bd = info.birthday ? `\"${info.birthday}\"` : 'null';
-        await db.run(`insert into user (userid, name, birthday) values (?,?,${bd})`, context.user.id, info.name);
+        await service.saveUser(context.user.id, info.name, info.birthday);
 
         return Promise.resolve(`${info.name} を登録しました。`);
     }
 
-    @transaction(STORAGE)
-    public async update(context: Context): Promise<string> {
+    public async update(context: Context, service: IUserService): Promise<string> {
         const subargs = this.args.slice(1);
         if (subargs.length < 2) {
             return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには 変更する属性とその内容が必要です。`);
         }
 
-        const db: sqlite.Database = context.get(STORAGE);
-
         switch (subargs[0].toLowerCase()) {
             case 'name':
-                return this.updateName(context, subargs[1]);
+                return service.updateUserName(context.user.id, subargs[1])
+                    .then(() => `ユーザ名を ${subargs[1]} に変更しました。`);
             case 'birthday':
-                return this.updateBirthday(context, subargs[1]);
+                return service.updateBirthday(context.user.id, subargs[1])
+                    .then(() => `誕生日を ${subargs[1]} に変更しました。`);
             default:
                 return Promise.reject(`${subargs[0]} は、 user update コマンドでサポートされていない属性です。`);
         }
     }
 
-    public async info(context: Context): Promise<string> {
-        const db: sqlite.Database = context.get(STORAGE);
+    public async alias(context: Context, service: IUserService): Promise<string> {
+        const subargs = this.args.slice(1);
+        if (subargs.length < 1) {
+            return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには 新しいユーザ名 が必要です。`);
+        }
+
+        const info = await this.adjustUserInfo(context, service, subargs);
+
+        await service.aliasUser(context.user.id, info.fromuid, info.toname);
+
+        return Promise.resolve(`${info.toname} を登録しました。`);
+    }
+
+    public async info(context: Context, service: IUserService): Promise<string> {
         const subargs = this.args.slice(1);
         if (0 < subargs.length) {
             const name = subargs[0];
-            const nrow = await db.get<UserModel>('select userid, name, birthday, timestamp from user where name = ?', name);
+            const nrow = await service.findUserByName(name);
             if (nrow) {
                 return Promise.resolve(this.toString(nrow));
             }
@@ -151,12 +146,12 @@ export class User implements ICommand {
             return Promise.reject(`${name} というユーザは登録されていません。`);
         }
 
-        const row = await db.get<UserModel>('select userid, name, birthday, timestamp from user where userid = ?', context.user.id);
-        if (row) {
-            return Promise.resolve(this.toString(row));
+        const user = await service.findUserById(context.user.id);
+        if (user) {
+            return Promise.resolve(this.toString(user));
         }
 
-        return Promise.reject('あなたユーザは登録されていません。 user add me コマンドを実行するとユーザ登録できます。');
+        return Promise.reject('あなたユーザは登録されていません。');
     }
 
     private isMyself(s: string): boolean {
@@ -189,28 +184,27 @@ export class User implements ICommand {
         return result;
     }
 
-    private async updateName(context: Context, name: string): Promise<string> {
-        const db: sqlite.Database = context.get(STORAGE);
-        const namerow = await db.get<{ cnt: number }>('select count(id) as cnt from user where name = ?', name);
-        if (namerow && 0 < namerow.cnt) {
-            return Promise.reject(`${name} は、他のユーザが利用中のユーザ名です。`);
-        }
-        await db.run('update user set name = ? where userid = ?', name, context.user.id);
-
-        return Promise.resolve(`ユーザ名を ${name} に変更しました。`);
-    }
-
-    private async updateBirthday(context: Context, birthday: string): Promise<string> {
-        const db: sqlite.Database = context.get(STORAGE);
-        if (moment(birthday, 'MMDD').isValid() === false) {
-            return Promise.reject(`${birthday} は正しくない日付です。 MMDD形式で指定して下さい。`);
-        }
-        await db.run('update user set birthday = ? where userid = ?', birthday, context.user.id);
-
-        return Promise.resolve(`誕生日を ${birthday} に変更しました。`);
-    }
-
     private toString(user: UserModel): string {
         return `ユーザID:${user.userid} ユーザ名:${user.name} 誕生日:${user.birthday} 登録日:${user.timestamp}`;
+    }
+
+    private async adjustUserInfo(context: Context, service: IUserService, subargs: string[]):
+        Promise<{ fromuid: string, toname: string }> {
+
+        if (subargs.length === 1) {
+            return {
+                fromuid: context.user.id,
+                toname: subargs[0],
+            };
+        }
+        const u = await service.findUserByName(subargs[0]);
+        if (!u) {
+            return Promise.reject(`${subargs[0]} はユーザとして登録されていません。`);
+        }
+
+        return {
+            fromuid: u.userid,
+            toname: subargs[1],
+        };
     }
 }
