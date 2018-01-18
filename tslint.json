@@ -23,7 +23,8 @@
             "arrow-parameter",
             "property-declaration",
             "member-variable-declaration"
-        ]
+        ],
+        "newline-before-return": false
     },
     "linterOptions": {
         "exclude": [
