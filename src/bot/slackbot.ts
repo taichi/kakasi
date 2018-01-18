@@ -7,11 +7,10 @@ import {
 } from '@slack/client';
 import { Database, open } from 'sqlite';
 
-import { core, ICommandRepository } from '../command';
-import { KEY } from '../command/dict.sqlite';
+import { core, ICommandRepository, STORAGE } from '../command';
 import { Config, load } from '../config';
 import { Context } from '../context';
-import { IUser } from '../user';
+import { RuntimeUser } from '../user';
 
 const config = load(process.argv[2]);
 
@@ -24,7 +23,7 @@ const web = new WebClient(config.slack.access_token);
 
 const appData = {
     selfId: '',
-    users: new Map<string, IUser>(),
+    users: new Map<string, RuntimeUser>(),
 };
 
 const repos = core(config);
@@ -49,7 +48,7 @@ rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
                     displayName: m.name,
                     email: m.profile.email ? m.profile.email : '',
                 };
-            }).forEach((user: IUser) => {
+            }).forEach((user: RuntimeUser) => {
                 appData.users.set(user.id, user);
             });
         console.log('user list fetched');
@@ -84,7 +83,7 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
     };
 
     const context = new Context(user);
-    context.set(KEY, db);
+    context.set(STORAGE, db);
     context.evaluate(repos, unbanged)
         .then((result: string) => {
             rtm.sendMessage(`${result}`, msg.channel);

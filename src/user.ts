@@ -1,6 +1,6 @@
 
-export interface IUser {
-    readonly id: string;
-    readonly displayName: string;
-    readonly email: string;
-}
+export type RuntimeUser = {
+    id: string;
+    displayName: string;
+    email?: string;
+};

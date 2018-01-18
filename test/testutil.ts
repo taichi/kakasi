@@ -7,12 +7,12 @@ import { promisify } from 'util';
 import { Buffer } from 'buffer';
 import { Context } from '../src/context';
 
-import { IUser } from '../src/user';
+import { RuntimeUser } from '../src/user';
 
 const readFile = promisify(fs.readFile);
 const unlink = promisify(fs.unlink);
 
-export function dummy(): IUser {
+export function dummy(): RuntimeUser {
     return {
         id: 'xxx',
         displayName: 'John Doe',

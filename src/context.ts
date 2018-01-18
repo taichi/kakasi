@@ -2,16 +2,16 @@ import { ICommand, ICommandRepository } from './command';
 import { evaluate } from './interpreter';
 import { parse } from './parser';
 import { make, Random } from './random';
-import { IUser } from './user';
+import { RuntimeUser } from './user';
 
 // tslint:disable:no-any no-reserved-keywords
 export class Context {
 
-    public readonly user: IUser;
+    public readonly user: RuntimeUser;
     public readonly rand: Random;
     private slot: Map<string, any>;
 
-    constructor(user: IUser, rand: Random = make()) {
+    constructor(user: RuntimeUser, rand: Random = make()) {
         this.user = user;
         this.rand = rand;
         this.slot = new Map();
