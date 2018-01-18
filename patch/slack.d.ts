@@ -2,6 +2,8 @@
 // Project: https://github.com/slackapi/node-slack-sdk
 // Definitions by: Bilal Aijazi <https://github.com/bmajz>
 
+import * as WebSocket from 'ws';
+
 declare module '@slack/client' {
     class WebClient {
         constructor(
