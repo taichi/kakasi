@@ -11,7 +11,7 @@ import { SqliteDict, SqliteDictEditor } from '../../src/command/dict.sqlite';
 const DB_ROOM = makeDbRoom('test/command/dict.test.sqlite');
 
 test.before(async (t: TestContext) => {
-    await DB_ROOM.setup('src/command/dict.sqlite.sql', 'test/command/dict.sqlite.test.sql');
+    await DB_ROOM.setup('src/service/dict.sqlite.sql', 'test/command/dict.sqlite.test.sql');
 });
 
 test.beforeEach(DB_ROOM.open);

@@ -1,6 +1,7 @@
 import { Config } from '../config';
 import { Context } from '../context';
 import { IUserService, SqliteUserService, UserAliasModel, UserModel } from '../service/user';
+import { SqliteDict } from './dict.sqlite';
 import { factory as echoFactory } from './echo';
 import { ICommand, STORAGE } from './index';
 
@@ -78,7 +79,7 @@ export class User implements ICommand {
         if (!db) {
             return Promise.reject('データベースがセットアップされていません。');
         }
-        const service = new SqliteUserService(() => db);
+        const service = new SqliteUserService(async () => db);
 
         const subcmd = this.args[0];
         switch (subcmd.toLowerCase()) {
