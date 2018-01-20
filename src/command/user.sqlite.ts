@@ -1,6 +1,6 @@
 import { Config } from '../config';
 import { Context } from '../context';
-import { IUserService, SqliteUserService, UserModel } from '../service/user';
+import { IUserService, SqliteUserService, UserAliasModel, UserModel } from '../service/user';
 import { factory as echoFactory } from './echo';
 import { ICommand, STORAGE } from './index';
 
@@ -17,7 +17,7 @@ export function factory(config: Config, cmd: string[]): Promise<ICommand> {
 
 // tslint:disable-next-line:no-multiline-string
 const HELP = `
-user [add|update name|update birthday|alias|info|list|help]
+user [add|update name|update birthday|alias|remove|info|list|list alias|help]
     [add|join] [myself|me|ユーザ名]? 誕生日?
         ユーザを登録します。新規のユーザ登録は本人のみができます。
         myselfやmeをユーザ名として指定したり、ユーザ名を省略してユーザ登録した場合、SlackのDisplayNameをユーザ名として使います。
@@ -29,12 +29,17 @@ user [add|update name|update birthday|alias|info|list|help]
         誕生日は、MMDD形式で指定して下さい。
     [alias|ln] ユーザ名? ユーザ名
         最初に指定したユーザ名を、後に指定したユーザ名としても利用できるようにします。
-        最初のユーザ名を省略した場合、自分のユーザ名を、指定したユーザ名としても利用できるようにします。
+        最初のユーザ名を省略した場合、自分のユーザ名を指定したユーザ名としても利用できるようにします。
+    [remove|delete|del|rm] alias ユーザ名
+        指定したユーザ名が別名なら削除します。
     info [myself|me|ユーザ名]?
         ユーザの登録されている情報を表示します。
         myselfやmeをユーザ名として指定したり、ユーザ名の指定を省略した場合、コマンドを実行したユーザの情報を更新します。
     [list|ls]
         ユーザの一覧を表示します。
+    [list|ls] alias ユーザ名?
+        指定したユーザ名に関連する別名の一覧を表示します。
+        ユーザ名を省略した場合、自分のユーザ名に関連する別名の一覧を表示します。
     [help|?]
         このヘルプを表示します。
 
@@ -52,6 +57,10 @@ user [add|update name|update birthday|alias|info|list|help]
         コマンドを実行したユーザをユーザ名 smith としても扱います。
     user alias ricky peet
         ricky を peet としても扱います。
+    user rm alias peet
+        ユーザ名 peet が別名なら削除します。
+    user ls alias ricky
+        ユーザ名 ricky に関連する別名の一覧を表示します。
 `;
 
 export class User implements ICommand {
@@ -81,8 +90,16 @@ export class User implements ICommand {
             case 'alias':
             case 'ln':
                 return this.alias(context, service);
+            case 'delete':
+            case 'remove':
+            case 'del':
+            case 'rm':
+                return this.remove(context, service);
             case 'info':
                 return this.info(context, service);
+            case 'list':
+            case 'ls':
+                return this.list(context, service);
             case 'help':
             case '?':
             default:
@@ -97,9 +114,7 @@ export class User implements ICommand {
     public async add(context: Context, service: IUserService): Promise<string> {
         const subargs = this.args.slice(1);
         const info = this.extractAddParams(context, subargs);
-
         await service.saveUser(context.user.id, info.name, info.birthday);
-
         return Promise.resolve(`${info.name} を登録しました。`);
     }
 
@@ -128,10 +143,22 @@ export class User implements ICommand {
         }
 
         const info = await this.adjustUserInfo(context, service, subargs);
-
         await service.aliasUser(context.user.id, info.fromuid, info.toname);
-
         return Promise.resolve(`${info.toname} を登録しました。`);
+    }
+
+    public async remove(context: Context, service: IUserService): Promise<string> {
+        const subargs = this.args.slice(1);
+        if (subargs.length < 2 || subargs[0].toLowerCase() !== 'alias') {
+            return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには alias と ユーザ名 が必要です。`);
+        }
+
+        const name = subargs[1];
+        const n = await service.deleteAliasByName(name);
+        if (!n || n < 1) {
+            return Promise.resolve(`${name} は削除されませんでした。`);
+        }
+        return Promise.resolve(`${name} を削除しました。`);
     }
 
     public async info(context: Context, service: IUserService): Promise<string> {
@@ -142,7 +169,6 @@ export class User implements ICommand {
             if (nrow) {
                 return Promise.resolve(this.toString(nrow));
             }
-
             return Promise.reject(`${name} というユーザは登録されていません。`);
         }
 
@@ -150,8 +176,43 @@ export class User implements ICommand {
         if (user) {
             return Promise.resolve(this.toString(user));
         }
-
         return Promise.reject('あなたユーザは登録されていません。');
+    }
+
+    public async list(context: Context, service: IUserService): Promise<string> {
+        const subargs = this.args.slice(1);
+
+        if (subargs.length < 1) {
+            const list = await service.listUser();
+            return Promise.resolve(list.map(this.toString).join('\n'));
+        }
+
+        if (subargs[0].toLowerCase() !== 'alias') {
+            return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには alias が必要です。`);
+        }
+        if (subargs.length === 1) {
+            const user = await service.findUserById(context.user.id);
+            if (!user) {
+                return Promise.reject('あなたユーザは登録されていません。');
+            }
+            return this.listAliasById(service, user);
+        }
+
+        const name = subargs[1];
+        const resolvedUser = await service.findUserByName(name);
+        if (!resolvedUser) {
+            return Promise.reject(`${name} はユーザ登録されていません。`);
+        }
+        return this.listAliasById(service, resolvedUser);
+    }
+
+    private async listAliasById(service: IUserService, user: UserModel): Promise<string> {
+        const list = await service.listAliasById(user.userid);
+        const msg = [`${user.name} の別名は`].concat(
+            list.map((ua: UserAliasModel) => {
+                return `\t別名:${ua.name} 登録者:${ua.name_register} 登録日:${ua.timestamp}`;
+            }));
+        return Promise.resolve(msg.join('\n'));
     }
 
     private isMyself(s: string): boolean {
@@ -180,7 +241,6 @@ export class User implements ICommand {
                 result.birthday = subargs[1];
             }
         }
-
         return result;
     }
 
@@ -197,11 +257,11 @@ export class User implements ICommand {
                 toname: subargs[0],
             };
         }
+
         const u = await service.findUserByName(subargs[0]);
         if (!u) {
             return Promise.reject(`${subargs[0]} はユーザとして登録されていません。`);
         }
-
         return {
             fromuid: u.userid,
             toname: subargs[1],

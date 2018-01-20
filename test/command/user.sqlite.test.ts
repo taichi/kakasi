@@ -334,3 +334,145 @@ test.serial('info', async (t: SqliteContext) => {
 
     t.truthy(await user.execute(context));
 });
+
+test.serial('remove', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'zzz',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['rm']);
+
+    return user.execute(context)
+        .then(() => t.fail())
+        .catch((msg: Error) => {
+            t.falsy(msg.message);
+            t.truthy(msg);
+        });
+});
+
+test.serial('remove', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'zzz',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['rm', 'aaa']);
+
+    return user.execute(context)
+        .then(() => t.fail())
+        .catch((msg: Error) => {
+            t.falsy(msg.message);
+            t.truthy(msg);
+        });
+});
+
+test.serial('remove', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'aaa',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['rm', 'alias', 'zxc']);
+
+    t.truthy(await user.execute(context));
+
+    const ua = await t.context.db.get('select count(id) cnt from user_alias where name = "zxc";');
+    t.is(ua.cnt, 0);
+});
+
+test.serial('list', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'aaa',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['ls']);
+
+    t.truthy(await user.execute(context));
+});
+
+test.serial('list', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'zzz',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['list', 'aaa']);
+
+    return user.execute(context)
+        .then(() => t.fail())
+        .catch((msg: Error) => {
+            t.falsy(msg.message);
+            t.truthy(msg);
+        });
+});
+
+test.serial('list alias', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'zzz',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['list', 'alias']);
+
+    return user.execute(context)
+        .then(() => t.fail())
+        .catch((msg: Error) => {
+            t.falsy(msg.message);
+            t.truthy(msg);
+        });
+});
+
+test.serial('list alias', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'aaa',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['ls', 'alias']);
+    t.truthy(await user.execute(context));
+});
+
+test.serial('list alias', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'aaa',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['ls', 'alias', 'pxecd']);
+    return user.execute(context)
+        .then(() => t.fail())
+        .catch((msg: Error) => {
+            t.falsy(msg.message);
+            t.truthy(msg);
+        });
+});
+
+test.serial('list alias', async (t: SqliteContext) => {
+    const context = new Context({
+        id: 'aaa',
+        displayName: 'smith0346',
+        email: 'john@example.com',
+    });
+    context.set(STORAGE, t.context.db);
+
+    const user = new User(['ls', 'alias', 'zxd']);
+    t.truthy(await user.execute(context));
+});

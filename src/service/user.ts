@@ -10,6 +10,13 @@ export type UserModel = {
     timestamp: string;
 };
 
+export type UserAliasModel = {
+    userid: string;
+    name_register: string;
+    name: string;
+    timestamp: string;
+};
+
 export interface IUserService {
 
     findUserById(userid: string): Promise<UserModel | undefined>;
@@ -26,9 +33,11 @@ export interface IUserService {
 
     aliasUser(registerer: string, userid: string, newname: string): Promise<void>;
 
-    findAliasById(name: string): Promise<string[]>;
+    listAliasById(name: string): Promise<UserAliasModel[]>;
 
-    findAliasByName(name: string): Promise<string[]>;
+    deleteAliasByName(name: string): Promise<number>;
+
+    listUser(): Promise<UserModel[]>;
 }
 
 // tslint:disable-next-line:no-multiline-string
@@ -48,6 +57,13 @@ select count(id) cnt
 from (
     ${FIND_USER_BY_NAME}
 )`;
+
+// tslint:disable-next-line:no-multiline-string
+const LIST_ALIAS_BY_ID = `
+select ua.userid, u.name name_register, ua.name, ua.timestamp
+from user_alias ua inner join user u on u.userid = ua.userid_register
+where ua.userid = ?
+`;
 
 export type DatabaseProvider = () => Promise<sqlite.Database>;
 
@@ -120,10 +136,13 @@ export class SqliteUserService implements IUserService {
 
     public async updateBirthday(userid: string, birthday: string): Promise<void> {
         const db = await this.provider();
-        if (moment(birthday, 'MMDD').isValid() === false) {
-            return Promise.reject(`${birthday} は正しくない日付です。 MMDD形式で指定して下さい。`);
-        }
-        await db.run('update user set birthday = ? where userid = ?', birthday, userid);
+
+        return doTransaction(db, async () => {
+            if (moment(birthday, 'MMDD').isValid() === false) {
+                return Promise.reject(`${birthday} は正しくない日付です。 MMDD形式で指定して下さい。`);
+            }
+            await db.run('update user set birthday = ? where userid = ?', birthday, userid);
+        });
     }
 
     public async aliasUser(registerer: string, userid: string, newname: string): Promise<void> {
@@ -139,13 +158,29 @@ export class SqliteUserService implements IUserService {
         });
     }
 
-    public async findAliasById(name: string): Promise<string[]> {
+    public async listAliasById(userid: string): Promise<UserAliasModel[]> {
         const db = await this.provider();
-        throw new Error('Method not implemented.');
+
+        const row = await db.all(LIST_ALIAS_BY_ID, userid);
+
+        return row ? row : [];
     }
 
-    public async findAliasByName(name: string): Promise<string[]> {
+    public async deleteAliasByName(name: string): Promise<number> {
         const db = await this.provider();
-        throw new Error('Method not implemented.');
+
+        return doTransaction(db, async () => {
+            const stmt = await db.run('delete from user_alias where name = ?', name);
+
+            return stmt.changes;
+        });
+    }
+
+    public async listUser(): Promise<UserModel[]> {
+        const db = await this.provider();
+
+        const row = db.all<UserModel>('select id, userid, name, birthday, timestamp from user');
+
+        return row ? row : [];
     }
 }
