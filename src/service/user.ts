@@ -1,4 +1,4 @@
-import { doTransaction } from '../tx.sqlite';
+import { DatabaseProvider, doTransaction } from '../sqliteutil';
 
 import * as moment from 'moment';
 import * as sqlite from 'sqlite';
@@ -64,8 +64,6 @@ select ua.userid, u.name name_register, ua.name, ua.timestamp
 from user_alias ua inner join user u on u.userid = ua.userid_register
 where ua.userid = ?
 `;
-
-export type DatabaseProvider = () => Promise<sqlite.Database>;
 
 export class SqliteUserService implements IUserService {
 

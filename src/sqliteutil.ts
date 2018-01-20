@@ -1,5 +1,7 @@
 import * as sqlite from 'sqlite';
 
+export type DatabaseProvider = () => Promise<sqlite.Database>;
+
 export async function doTransaction<T>(db: sqlite.Database, op: () => Promise<T>): Promise<T> {
     await db.exec('begin transaction');
     try {
