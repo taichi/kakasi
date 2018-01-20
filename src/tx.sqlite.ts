@@ -1,5 +1,3 @@
-import { Context } from './context';
-
 import * as sqlite from 'sqlite';
 
 export async function doTransaction<T>(db: sqlite.Database, op: () => Promise<T>): Promise<T> {
