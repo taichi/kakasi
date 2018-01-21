@@ -1,10 +1,8 @@
-import { Context as AC, TestContext } from 'ava';
-
+import { Buffer } from 'buffer';
 import * as fs from 'fs';
 import * as sqlite from 'sqlite';
 import { promisify } from 'util';
 
-import { Buffer } from 'buffer';
 import { Context } from '../src/context';
 
 import { RuntimeUser } from '../src/user';
@@ -20,21 +18,18 @@ export function dummy(): RuntimeUser {
     };
 }
 
-export type SqliteContext = TestContext & AC<{
-    db: sqlite.Database,
-}>;
-
 export type DbRoom = {
     setup(...args: string[]): Promise<void>;
 
-    open(t: SqliteContext): Promise<void>;
+    open(): Promise<sqlite.Database>;
 
-    close(t: SqliteContext): Promise<void>;
+    close(): Promise<void>;
 
     teardown(): Promise<void>;
 };
 
 export function makeDbRoom(database: string): DbRoom {
+    let conn: sqlite.Database;
     return {
         setup: async (...args: string[]) => {
             await unlink(database).catch(() => {
@@ -49,12 +44,13 @@ export function makeDbRoom(database: string): DbRoom {
             await db.close();
         },
 
-        open: async (t: SqliteContext): Promise<void> => {
-            t.context.db = await sqlite.open(database);
+        open: async (): Promise<sqlite.Database> => {
+            conn = await sqlite.open(database);
+            return conn;
         },
 
-        close: async (t: SqliteContext): Promise<void> => {
-            await t.context.db.close();
+        close: async (): Promise<void> => {
+            return conn.close();
         },
 
         teardown: async () => {

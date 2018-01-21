@@ -1,478 +1,481 @@
 // tslint:disable-next-line:import-name
-import test, { TestContext } from 'ava';
-
 import { STORAGE } from '../../src/command';
 import { Context } from '../../src/context';
 
-import { dummy, makeDbRoom, SqliteContext } from '../testutil';
+import { dummy, makeDbRoom } from '../testutil';
 
 import { User } from '../../src/command/user.sqlite';
 
+import * as sqlite from 'sqlite';
+
 const DB_ROOM = makeDbRoom('test/command/user.test.sqlite');
 
-test.before(async (t: TestContext) => {
-    await DB_ROOM.setup('src/service/user.sqlite.sql', 'test/command/user.sqlite.test.sql');
-});
+describe('dict', () => {
+    let conn: sqlite.Database;
+    beforeAll(async () => {
+        await DB_ROOM.setup('src/service/user.sqlite.sql', 'test/command/user.sqlite.test.sql');
+    });
 
-test.beforeEach(DB_ROOM.open);
+    beforeEach(async () => conn = await DB_ROOM.open());
 
-test.afterEach(DB_ROOM.close);
+    afterEach(() => DB_ROOM.close());
 
-test.after(DB_ROOM.teardown);
+    afterAll(DB_ROOM.teardown);
 
-test((t: TestContext) => {
-    const context = new Context(dummy());
+    test('empty', () => {
+        const context = new Context(dummy());
 
-    const user = new User([]);
+        const user = new User([]);
 
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('NoDB', () => {
+        const context = new Context(dummy());
+
+        const user = new User(['aaa']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('help', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const user = new User(['help']);
+
+        expect(await user.execute(context)).toBeTruthy();
+    });
+
+    test('add', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const user = new User(['add', '0230']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('add', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'john doe',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test((t: TestContext) => {
-    const context = new Context(dummy());
+        const user = new User(['add', '0123']);
 
-    const user = new User(['aaa']);
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('add', async () => {
+        const context = new Context({
+            id: 'zzz',
+            displayName: 'john doe',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test('help', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+        const user = new User(['add', 'bbb']);
 
-    const user = new User(['help']);
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-    t.truthy(await user.execute(context));
-});
-
-test.serial('add', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['add', '0230']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('add', async () => {
+        const context = new Context({
+            id: 'bbb',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('add', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'john doe',
-        email: 'john@example.com',
+        const user = new User(['add', '0405']);
+
+        expect(await user.execute(context)).toBeTruthy();
+        const data = await conn
+            .get<{ name: string, birthday: string }>('select name, birthday from user where userid = ?', context.user.id);
+        expect(data.name).toBe('smith0346');
+        expect(data.birthday).toBe('0405');
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['add', '0123']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('update', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'john doe',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('add', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'zzz',
-        displayName: 'john doe',
-        email: 'john@example.com',
+        const user = new User(['update']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['add', 'bbb']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('update', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'john doe',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('add', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'bbb',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['update', 'name']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['add', '0405']);
-
-    t.truthy(await user.execute(context));
-    const data = await t.context.db
-        .get<{ name: string, birthday: string }>('select name, birthday from user where userid = ?', context.user.id);
-    t.is(data.name, 'smith0346');
-    t.is(data.birthday, '0405');
-});
-
-test.serial('update', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'john doe',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['update']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('update', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'john doe',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('update', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'john doe',
-        email: 'john@example.com',
+        const user = new User(['update', 'zzz']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['update', 'name']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('update name', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('update', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'john doe',
-        email: 'john@example.com',
+        const user = new User(['update', 'name', 'ddd']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['update', 'zzz']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('update name', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('update name', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['update', 'name', 'zzz']);
+
+        expect(await user.execute(context)).toBeTruthy();
+        const data = await conn
+            .get<{ name: string, birthday: string }>('select name, birthday from user where userid = ?', context.user.id);
+        expect(data.name).toBe('zzz');
+        expect(data.birthday).toBe('0220');
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['update', 'name', 'ddd']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('update birthday', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'john doe',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('update name', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['update', 'birthday', '0340']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['update', 'name', 'zzz']);
-
-    t.truthy(await user.execute(context));
-    const data = await t.context.db
-        .get<{ name: string, birthday: string }>('select name, birthday from user where userid = ?', context.user.id);
-    t.is(data.name, 'zzz');
-    t.is(data.birthday, '0220');
-});
-
-test.serial('update birthday', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'john doe',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['update', 'birthday', '0340']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('update birthday', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('update birthday', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['update', 'birthday', '0421']);
+
+        expect(await user.execute(context)).toBeTruthy();
+        const data = await conn
+            .get<{ name: string, birthday: string }>('select name, birthday from user where userid = ?', context.user.id);
+        expect(data.birthday).toBe('0421');
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['update', 'birthday', '0421']);
+    test('alias', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    t.truthy(await user.execute(context));
-    const data = await t.context.db
-        .get<{ name: string, birthday: string }>('select name, birthday from user where userid = ?', context.user.id);
-    t.is(data.birthday, '0421');
-});
+        const user = new User(['ln']);
 
-test.serial('alias', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-    const user = new User(['ln']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('alias', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('alias', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['alias', 'xyxyx']);
+
+        expect(await user.execute(context)).toBeTruthy();
+        const data = await conn
+            .get<{ name: string }>('select * from user_alias where userid = ? and name = ?', context.user.id, 'xyxyx');
+        expect(data.name).toBe('xyxyx');
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['alias', 'xyxyx']);
-
-    t.truthy(await user.execute(context));
-    const data = await t.context.db
-        .get<{ name: string }>('select * from user_alias where userid = ? and name = ?', context.user.id, 'xyxyx');
-    t.is(data.name, 'xyxyx');
-});
-
-test.serial('alias', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['alias', 'ddd', 'zyzxxx']);
-
-    t.truthy(await user.execute(context));
-    const data = await t.context.db
-        .get<{ name: string }>('select * from user_alias where userid = ? and name = ?', 'ccc', 'zyzxxx');
-    t.is(data.name, 'zyzxxx');
-});
-
-test.serial('info', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'zzz',
-        displayName: 'smith0346',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['info']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('alias', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('info', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['alias', 'ddd', 'zyzxxx']);
+
+        expect(await user.execute(context)).toBeTruthy();
+        const data = await conn
+            .get<{ name: string }>('select * from user_alias where userid = ? and name = ?', 'ccc', 'zyzxxx');
+        expect(data.name).toBe('zyzxxx');
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['info', 'ddd']);
-
-    t.truthy(await user.execute(context));
-});
-
-test.serial('info', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['info']);
-
-    t.truthy(await user.execute(context));
-});
-
-test.serial('remove', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'zzz',
-        displayName: 'smith0346',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['rm']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('info', async () => {
+        const context = new Context({
+            id: 'zzz',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('remove', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'zzz',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['info']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['rm', 'aaa']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('info', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('remove', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['info', 'ddd']);
+
+        expect(await user.execute(context)).toBeTruthy();
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['rm', 'alias', 'zxc']);
-
-    t.truthy(await user.execute(context));
-
-    const ua = await t.context.db.get('select count(id) cnt from user_alias where name = "zxc";');
-    t.is(ua.cnt, 0);
-});
-
-test.serial('list', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['ls']);
-
-    t.truthy(await user.execute(context));
-});
-
-test.serial('list', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'zzz',
-        displayName: 'smith0346',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['list', 'aaa']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('info', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('list alias', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'zzz',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['info']);
+
+        expect(await user.execute(context)).toBeTruthy();
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['list', 'alias']);
-
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('remove', async () => {
+        const context = new Context({
+            id: 'zzz',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('list alias', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['rm']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['ls', 'alias']);
-    t.truthy(await user.execute(context));
-});
-
-test.serial('list alias', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
-    });
-    context.set(STORAGE, t.context.db);
-
-    const user = new User(['ls', 'alias', 'pxecd']);
-    return user.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
+    test('remove', async () => {
+        const context = new Context({
+            id: 'zzz',
+            displayName: 'smith0346',
+            email: 'john@example.com',
         });
-});
+        context.set(STORAGE, conn);
 
-test.serial('list alias', async (t: SqliteContext) => {
-    const context = new Context({
-        id: 'aaa',
-        displayName: 'smith0346',
-        email: 'john@example.com',
+        const user = new User(['rm', 'aaa']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
     });
-    context.set(STORAGE, t.context.db);
 
-    const user = new User(['ls', 'alias', 'zxd']);
-    t.truthy(await user.execute(context));
+    test('remove', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
+        });
+        context.set(STORAGE, conn);
+
+        const user = new User(['rm', 'alias', 'zxc']);
+
+        expect(await user.execute(context)).toBeTruthy();
+
+        const ua = await conn.get('select count(id) cnt from user_alias where name = "zxc";');
+        expect(ua.cnt).toBe(0);
+    });
+
+    test('list', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
+        });
+        context.set(STORAGE, conn);
+
+        const user = new User(['ls']);
+
+        expect(await user.execute(context)).toBeTruthy();
+    });
+
+    test('list', async () => {
+        const context = new Context({
+            id: 'zzz',
+            displayName: 'smith0346',
+            email: 'john@example.com',
+        });
+        context.set(STORAGE, conn);
+
+        const user = new User(['list', 'aaa']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('list alias', async () => {
+        const context = new Context({
+            id: 'zzz',
+            displayName: 'smith0346',
+            email: 'john@example.com',
+        });
+        context.set(STORAGE, conn);
+
+        const user = new User(['list', 'alias']);
+
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('list alias', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
+        });
+        context.set(STORAGE, conn);
+
+        const user = new User(['ls', 'alias']);
+        expect(await user.execute(context)).toBeTruthy();
+    });
+
+    test('list alias', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
+        });
+        context.set(STORAGE, conn);
+
+        const user = new User(['ls', 'alias', 'pxecd']);
+        return user.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('list alias', async () => {
+        const context = new Context({
+            id: 'aaa',
+            displayName: 'smith0346',
+            email: 'john@example.com',
+        });
+        context.set(STORAGE, conn);
+
+        const user = new User(['ls', 'alias', 'zxd']);
+        expect(await user.execute(context)).toBeTruthy();
+    });
 });

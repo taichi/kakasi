@@ -1,25 +1,23 @@
 // tslint:disable-next-line:import-name
-import test, { TestContext } from 'ava';
-
 import { CommandFactory, CommandRepository, ICommand } from '../src/command';
 import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
 import { dummy } from './testutil';
 
-test((t: TestContext) => {
-    const df: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+test('evaluate', () => {
+    const df = (config: Config, args: string[]) => {
         return Promise.resolve({
             execute: (): Promise<string> => {
-                t.fail();
+                fail();
 
-                return Promise.resolve('fail');
+                return Promise.reject('fail');
             },
         });
     };
     const cr = new CommandRepository(DEFAULT, df);
 
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        const fn: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+        const fn = (config: Config, args: string[]) => {
             return Promise.resolve({ execute: () => Promise.resolve(`${a} ${args.join('_')}`) });
         };
         cr.register(a, fn);
@@ -29,23 +27,23 @@ test((t: TestContext) => {
     const cmd = ctx.evaluate(cr, 'aaa $(bbb ccc ddd) eee');
 
     return cmd.then((str: string) => {
-        t.is(str, 'aaa bbb ccc_ddd_eee');
+        expect(str).toBe('aaa bbb ccc_ddd_eee');
     });
 });
 
-test((t: TestContext) => {
-    const df: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+test('evaluate', () => {
+    const df = (config: Config, args: string[]) => {
         return Promise.resolve({
             execute: (): Promise<string> => {
-                t.fail();
+                fail();
 
-                return Promise.resolve('fail');
+                return Promise.reject('fail');
             },
         });
     };
     const cr = new CommandRepository(DEFAULT, df);
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        const fn: CommandFactory = (config: Config, args: string[]): Promise<ICommand> => {
+        const fn = (config: Config, args: string[]) => {
             return Promise.resolve({ execute: () => Promise.resolve(`${a} ${args.join('_')}`) });
         };
         cr.register(a, fn);
@@ -55,6 +53,6 @@ test((t: TestContext) => {
     const cmd = ctx.evaluate(cr, 'aaa $(bbb ccc ddd)eee');
 
     return cmd.then((str: string) => {
-        t.is(str, 'aaa bbb ccc_dddeee');
+        expect(str).toBe('aaa bbb ccc_dddeee');
     });
 });

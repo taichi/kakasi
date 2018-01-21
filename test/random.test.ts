@@ -1,11 +1,9 @@
 // tslint:disable-next-line:import-name
-import test, { TestContext } from 'ava';
-
 import { make } from '../src/random';
 
-test((t: TestContext) => {
+test('make', () => {
     const r = make();
-    t.truthy(r);
+    expect(r).toBeTruthy();
 
-    t.true(0 < r());
+    expect(0 < r()).toBe(true);
 });

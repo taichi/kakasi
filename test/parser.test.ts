@@ -1,68 +1,65 @@
 // tslint:disable-next-line:import-name
-import test, { Macro, TestContext } from 'ava';
-
 import { ComboNode, ExpressionNode, Node, TextNode } from '../src/node';
 import { parse } from '../src/parser';
 
-const macro: Macro<TestContext> = (t: TestContext, input: string, expected: Node<{}>[]) => {
+const assertNode = (input: string, expected: Node<{}>[]) => {
     const result = parse(input);
-    t.log(JSON.stringify(result));
-    t.deepEqual(result, expected);
+    expect(result).toEqual(expected);
 };
 
-test(macro, 'moge', [
-    new TextNode('moge')]);
+test('TextNode', () => assertNode('moge', [
+    new TextNode('moge')]));
 
-test(macro, 'moge hoge', [
+test('TextNode', () => assertNode('moge hoge', [
     new TextNode('moge'),
-    new TextNode('hoge')]);
+    new TextNode('hoge')]));
 
-test(macro, 'moge\thoge', [
+test('TextNode', () => assertNode('moge\thoge', [
     new TextNode('moge'),
-    new TextNode('hoge')]);
+    new TextNode('hoge')]));
 
-test(macro, 'moge \t hoge', [
+test('TextNode', () => assertNode('moge \t hoge', [
     new TextNode('moge'),
-    new TextNode('hoge')]);
+    new TextNode('hoge')]));
 
-test(macro, 'moge "foomoge"', [
+test('TextNode', () => assertNode('moge "foomoge"', [
     new TextNode('moge'),
-    new TextNode('foomoge')]);
+    new TextNode('foomoge')]));
 
-test(macro, 'moge "foo\"\"moge"', [
+test('TextNode', () => assertNode('moge "foo\"\"moge"', [
     new TextNode('moge'),
-    new TextNode('foo\"moge')]);
+    new TextNode('foo\"moge')]));
 
-test(macro, 'moge \'foo\nmoge\'', [
+test('TextNode', () => assertNode('moge \'foo\nmoge\'', [
     new TextNode('moge'),
-    new TextNode('foo\nmoge')]);
+    new TextNode('foo\nmoge')]));
 
-test(macro, 'moge \'foomoge\'', [
+test('TextNode', () => assertNode('moge \'foomoge\'', [
     new TextNode('moge'),
-    new TextNode('foomoge')]);
+    new TextNode('foomoge')]));
 
-test(macro, 'moge \'foo\'\'moge\'', [
+test('TextNode', () => assertNode('moge \'foo\'\'moge\'', [
     new TextNode('moge'),
-    new TextNode('foo\'moge')]);
+    new TextNode('foo\'moge')]));
 
-test(macro, 'moge \'foo\nmoge\'', [
+test('TextNode', () => assertNode('moge \'foo\nmoge\'', [
     new TextNode('moge'),
-    new TextNode('foo\nmoge')]);
+    new TextNode('foo\nmoge')]));
 
-test(macro, '$(moge)', [
+test('ExpressionNode', () => assertNode('$(moge)', [
     new ExpressionNode(
         [new TextNode('moge')],
-    )]);
+    )]));
 
-test(macro, '$(moge hoge)', [
+test('ExpressionNode', () => assertNode('$(moge hoge)', [
     new ExpressionNode(
         [
             new TextNode('moge'),
             new TextNode('hoge'),
         ],
-    )]);
+    )]));
 
-test(macro, 'hoge $(moge) doge', [
+test('ExpressionNode', () => assertNode('hoge $(moge) doge', [
     new TextNode('hoge'),
     new ExpressionNode(
         [
@@ -70,9 +67,9 @@ test(macro, 'hoge $(moge) doge', [
         ],
     ),
     new TextNode('doge'),
-]);
+]));
 
-test(macro, 'hoge $(moge doge) goge', [
+test('ExpressionNode', () => assertNode('hoge $(moge doge) goge', [
     new TextNode('hoge'),
     new ExpressionNode(
         [
@@ -81,9 +78,9 @@ test(macro, 'hoge $(moge doge) goge', [
         ],
     ),
     new TextNode('goge'),
-]);
+]));
 
-test(macro, 'hoge $(moge "doge doge") goge', [
+test('ExpressionNode', () => assertNode('hoge $(moge "doge doge") goge', [
     new TextNode('hoge'),
     new ExpressionNode(
         [
@@ -92,9 +89,9 @@ test(macro, 'hoge $(moge "doge doge") goge', [
         ],
     ),
     new TextNode('goge'),
-]);
+]));
 
-test(macro, 'hoge$(moge)', [
+test('ComboNode', () => assertNode('hoge$(moge)', [
     new ComboNode([
         new TextNode('hoge'),
         new ExpressionNode(
@@ -103,9 +100,9 @@ test(macro, 'hoge$(moge)', [
             ],
         ),
     ]),
-]);
+]));
 
-test(macro, '$(moge)goge', [
+test('ComboNode', () => assertNode('$(moge)goge', [
     new ComboNode([
         new ExpressionNode(
             [
@@ -114,9 +111,9 @@ test(macro, '$(moge)goge', [
         ),
         new TextNode('goge'),
     ]),
-]);
+]));
 
-test(macro, 'hoge$(moge)goge', [
+test('ComboNode', () => assertNode('hoge$(moge)goge', [
     new ComboNode([
         new TextNode('hoge'),
         new ExpressionNode(
@@ -126,9 +123,9 @@ test(macro, 'hoge$(moge)goge', [
         ),
         new TextNode('goge'),
     ]),
-]);
+]));
 
-test(macro, 'aaa hoge$(moge)goge', [
+test('ComboNode', () => assertNode('aaa hoge$(moge)goge', [
     new TextNode('aaa'),
     new ComboNode([
         new TextNode('hoge'),
@@ -139,9 +136,9 @@ test(macro, 'aaa hoge$(moge)goge', [
         ),
         new TextNode('goge'),
     ]),
-]);
+]));
 
-test(macro, 'hoge$(moge)goge aaa', [
+test('ComboNode', () => assertNode('hoge$(moge)goge aaa', [
     new ComboNode([
         new TextNode('hoge'),
         new ExpressionNode(
@@ -152,9 +149,9 @@ test(macro, 'hoge$(moge)goge aaa', [
         new TextNode('goge'),
     ]),
     new TextNode('aaa'),
-]);
+]));
 
-test(macro, '$(aaa) hoge$(moge)goge', [
+test('ComboNode', () => assertNode('$(aaa) hoge$(moge)goge', [
     new ExpressionNode(
         [
             new TextNode('aaa'),
@@ -169,9 +166,9 @@ test(macro, '$(aaa) hoge$(moge)goge', [
         ),
         new TextNode('goge'),
     ]),
-]);
+]));
 
-test(macro, 'hoge$(moge)goge $(aaa)', [
+test('ComboNode', () => assertNode('hoge$(moge)goge $(aaa)', [
     new ComboNode([
         new TextNode('hoge'),
         new ExpressionNode(
@@ -186,9 +183,9 @@ test(macro, 'hoge$(moge)goge $(aaa)', [
             new TextNode('aaa'),
         ],
     ),
-]);
+]));
 
-test(macro, 'aaa hoge$(moge)goge $(bbb)', [
+test('ComboNode', () => assertNode('aaa hoge$(moge)goge $(bbb)', [
     new TextNode('aaa'),
     new ComboNode([
         new TextNode('hoge'),
@@ -204,12 +201,12 @@ test(macro, 'aaa hoge$(moge)goge $(bbb)', [
             new TextNode('bbb'),
         ],
     ),
-]);
+]));
 
-test(macro, '"hoge$(moge)goge"', [
+test('TextNode', () => assertNode('"hoge$(moge)goge"', [
     new TextNode('hoge$(moge)goge'),
-]);
+]));
 
-test(macro, '\'hoge$(moge)goge\'', [
+test('TextNode', () => assertNode('\'hoge$(moge)goge\'', [
     new TextNode('hoge$(moge)goge'),
-]);
+]));

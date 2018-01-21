@@ -1,293 +1,294 @@
 // tslint:disable-next-line:import-name
-import test, { TestContext } from 'ava';
-
 import { STORAGE } from '../../src/command';
 import { Context } from '../../src/context';
 
-import { dummy, makeDbRoom, SqliteContext } from '../testutil';
+import { dummy, makeDbRoom } from '../testutil';
 
 import { SqliteDict, SqliteDictEditor } from '../../src/command/dict.sqlite';
 
 const DB_ROOM = makeDbRoom('test/command/dict.test.sqlite');
 
-test.before(async (t: TestContext) => {
-    await DB_ROOM.setup('src/service/dict.sqlite.sql', 'test/command/dict.sqlite.test.sql');
-});
+describe('dict', () => {
+    let conn;
+    beforeAll(async () => {
+        await DB_ROOM.setup('src/service/dict.sqlite.sql', 'test/command/dict.sqlite.test.sql');
+    });
 
-test.beforeEach(DB_ROOM.open);
+    beforeEach(async () => conn = await DB_ROOM.open());
 
-test.afterEach(DB_ROOM.close);
+    afterEach(() => DB_ROOM.close());
 
-test.after(DB_ROOM.teardown);
+    afterAll(DB_ROOM.teardown);
 
-test((t: TestContext) => {
-    const context = new Context(dummy());
+    test('empty', () => {
+        const context = new Context(dummy());
 
-    const dict = new SqliteDict([]);
+        const dict = new SqliteDict([]);
 
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-test((t: TestContext) => {
-    const context = new Context(dummy());
+    test('NoDB', () => {
+        const context = new Context(dummy());
 
-    const dict = new SqliteDict(['aaa']);
+        const dict = new SqliteDict(['aaa']);
 
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-test(async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+    test('HELP', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    const dict = new SqliteDict(['ppp']);
+        const dict = new SqliteDict(['ppp']);
 
-    t.is(await dict.execute(context), 'ppp');
-});
+        expect(await dict.execute(context)).toBe('ppp');
+    });
 
-test(async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+    test('One Word', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    const dict = new SqliteDict(['bbb']);
+        const dict = new SqliteDict(['bbb']);
 
-    t.is(await dict.execute(context), 'www');
-});
+        expect(await dict.execute(context)).toBe('www');
+    });
 
-test(async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+    test('alias', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    const dict = new SqliteDict(['eee']);
+        const dict = new SqliteDict(['eee']);
 
-    t.is(await dict.execute(context), 'www');
-});
+        expect(await dict.execute(context)).toBe('www');
+    });
 
-test(async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+    test('one random', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    const dict = new SqliteDict(['aaa']);
-    const value = await dict.execute(context);
+        const dict = new SqliteDict(['aaa']);
+        const value = await dict.execute(context);
 
-    t.true(-1 < ['zzz', 'yyy', 'xxx'].findIndex((v: string) => v === value));
-});
+        expect(-1 < ['zzz', 'yyy', 'xxx'].findIndex((v: string) => v === value)).toBe(true);
+    });
 
-test((t: TestContext) => {
-    const context = new Context(dummy());
+    test('empty', () => {
+        const context = new Context(dummy());
 
-    const dict = new SqliteDictEditor([]);
+        const dict = new SqliteDictEditor([]);
 
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-test((t: TestContext) => {
-    const context = new Context(dummy());
+    test('NoDB', () => {
+        const context = new Context(dummy());
 
-    const dict = new SqliteDictEditor(['aaa']);
+        const dict = new SqliteDictEditor(['aaa']);
 
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-test('help', (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+    test('help', () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    const dict = new SqliteDictEditor(['help']);
+        const dict = new SqliteDictEditor(['help']);
 
-    return dict.execute(context)
-        .then((msg: string) => t.truthy(msg));
-});
+        return dict.execute(context)
+            .then((msg: string) => expect(msg).toBeTruthy());
+    });
 
-test.serial('list', (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+    test('list', () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    const dict = new SqliteDictEditor(['list']);
+        const dict = new SqliteDictEditor(['list']);
 
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test.serial('list', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
 
-    const dict = new SqliteDictEditor(['list', 'aaa']);
+    test('list', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    t.is(await dict.execute(context), ['xxx', 'yyy', 'zzz'].join('\n'));
-});
+        const dict = new SqliteDictEditor(['list', 'aaa']);
 
-test.serial('list', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
+        expect(await dict.execute(context)).toBe(['xxx', 'yyy', 'zzz'].join('\n'));
+    });
 
-    const dict = new SqliteDictEditor(['list', 'ccc']);
+    test('list', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
 
-    t.is(await dict.execute(context), ['xxx', 'yyy', 'zzz'].join('\n'));
-});
+        const dict = new SqliteDictEditor(['list', 'ccc']);
 
-test('add', (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['add', 'aaa']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test.serial('add', (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['add', 'aaa', 'zzz']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test.serial('add', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['add', 'ggg', 'zzz']);
-
-    t.truthy(await dict.execute(context));
-});
-
-test('remove', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['remove', 'aaa']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test('remove', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['remove', 'aaa', 'ppp']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test('remove', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['remove', 'ccc', 'ppp']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test.serial('remove', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['remove', 'aaa', 'zzz']);
-
-    t.truthy(await dict.execute(context));
-    const row = await t.context.db.get<{ cnt: number }>('select count(id) as cnt from word_list where id_keyword = 1');
-    t.is(row.cnt, 2);
-});
-
-test('alias', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['alias', 'ggg']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test('alias', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['alias', 'aaa', 'bbb']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test('alias', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['alias', 'ggg', 'ccc']);
-
-    return dict.execute(context)
-        .then(() => t.fail())
-        .catch((msg: Error) => {
-            t.falsy(msg.message);
-            t.truthy(msg);
-        });
-});
-
-test.serial('alias', async (t: SqliteContext) => {
-    const context = new Context(dummy());
-    context.set(STORAGE, t.context.db);
-
-    const dict = new SqliteDictEditor(['alias', 'hhh', 'aaa']);
-
-    t.truthy(await dict.execute(context));
+        expect(await dict.execute(context)).toBe(['xxx', 'yyy', 'zzz'].join('\n'));
+    });
+
+    test('add', () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['add', 'aaa']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('add', () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['add', 'aaa', 'zzz']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('add', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['add', 'ggg', 'zzz']);
+
+        expect(await dict.execute(context)).toBeTruthy();
+    });
+
+    test('remove', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['remove', 'aaa']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('remove', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['remove', 'aaa', 'ppp']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('remove', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['remove', 'ccc', 'ppp']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('remove', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['remove', 'aaa', 'zzz']);
+
+        expect(await dict.execute(context)).toBeTruthy();
+        const row = await conn.get('select count(id) as cnt from word_list where id_keyword = 1');
+        expect(row.cnt).toBe(2);
+    });
+
+    test('alias', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['alias', 'ggg']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('alias', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['alias', 'aaa', 'bbb']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('alias', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['alias', 'ggg', 'ccc']);
+
+        return dict.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('alias', async () => {
+        const context = new Context(dummy());
+        context.set(STORAGE, conn);
+
+        const dict = new SqliteDictEditor(['alias', 'hhh', 'aaa']);
+
+        expect(await dict.execute(context)).toBeTruthy();
+    });
 });

@@ -1,7 +1,7 @@
 import { core, ICommandRepository } from '../../src/command';
 import { Config, load } from '../../src/config';
 import { Context } from '../../src/context';
-import { IUser } from '../../src/user';
+import { RuntimeUser } from '../../src/user';
 
 import { dummy } from '../testutil';
 
@@ -11,7 +11,7 @@ export class CliBot {
     private context: Context;
     private repos: ICommandRepository;
 
-    constructor(user: IUser, config: Config) {
+    constructor(user: RuntimeUser, config: Config) {
         this.context = new Context(user);
         this.repos = core(config);
     }
