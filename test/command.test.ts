@@ -1,15 +1,17 @@
-// tslint:disable-next-line:import-name
-import { CommandRepository, core } from '../src/command';
+import { Container } from 'inversify';
+
+import { CommandFactory, CommandRepository, core } from '../src/command';
 import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
+
 import { dummy } from './testutil';
 
 test('CommandRepository', async () => {
-    const df = (config: Config, args: string[]) => { return { execute: () => Promise.resolve(args.join(' ')) }; };
-    const cr = new CommandRepository(DEFAULT, df);
+    const df = async (config: Config, args: string[]) => { return { execute: async () => args.join(' ') }; };
+    const cr = new CommandRepository(DEFAULT, df, new Container());
 
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        cr.register(a, (config: Config, args: string[]) => { return { execute: () => Promise.resolve(a) }; });
+        cr.register(a, async (config: Config, args: string[]) => { return { execute: async () => a }; });
     }
 
     const aaa = await cr.find(['aaa', 'bbb', 'cccc']);
@@ -21,7 +23,8 @@ test('CommandRepository', async () => {
 });
 
 test('CommandRepository', async () => {
-    const cr = core(DEFAULT);
+    const container = new Container();
+    const cr = core(DEFAULT, container);
 
     const cmd = await cr.find(['echo', 'aaa', 'bbb']);
 
