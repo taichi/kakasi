@@ -1,6 +1,7 @@
-import { DatabaseProvider, doTransaction } from '../sqliteutil';
-
+import { inject, injectable } from 'inversify';
 import * as sqlite from 'sqlite';
+
+import { DatabaseProvider, doTransaction, TYPES } from '../sqliteutil';
 
 export interface IDictService {
     getWordRandomly(title: string): Promise<string | undefined>;
@@ -82,10 +83,11 @@ from word_list inner join keyword on word_list.id_keyword = keyword.id
 where keyword.title = ?
 `;
 
+@injectable()
 export class SqliteDictService implements IDictService {
     private provider: DatabaseProvider;
 
-    constructor(provider: DatabaseProvider) {
+    constructor( @inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
         this.provider = provider;
     }
 

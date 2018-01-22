@@ -1,8 +1,8 @@
-import { DatabaseProvider, doTransaction, TYPES } from '../sqliteutil';
-
-import { inject, injectable, named } from 'inversify';
+import { inject, injectable } from 'inversify';
 import * as moment from 'moment';
 import * as sqlite from 'sqlite';
+
+import { DatabaseProvider, doTransaction, TYPES } from '../sqliteutil';
 
 export type UserModel = {
     userid: string;
