@@ -46,6 +46,7 @@
     "test": "jest",
     "test:parser": "jest test/parser.test.ts",
     "test:command": "jest test/command/",
+    "test:service": "jest test/service/",
     "watch:test": "jest --watch",
     "cover": "jest --coverage",
     "clibot": "ts-node test/bot/clibot.ts config.json",
@@ -53,6 +54,9 @@
     "postinstall": "cp-file patch/slack.d.ts node_modules/@slack/client/index.d.ts"
   },
   "jest": {
+    "setupFiles": [
+      "./test/testutil.ts"
+    ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
     },

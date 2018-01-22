@@ -1,5 +1,6 @@
-import { DatabaseProvider, doTransaction } from '../sqliteutil';
+import { DatabaseProvider, doTransaction, TYPES } from '../sqliteutil';
 
+import { inject, injectable, named } from 'inversify';
 import * as moment from 'moment';
 import * as sqlite from 'sqlite';
 
@@ -65,11 +66,12 @@ from user_alias ua inner join user u on u.userid = ua.userid_register
 where ua.userid = ?
 `;
 
+@injectable()
 export class SqliteUserService implements IUserService {
 
     private provider: DatabaseProvider;
 
-    constructor(provider: DatabaseProvider) {
+    constructor( @inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
         this.provider = provider;
     }
 
