@@ -98,7 +98,7 @@ export class DictEditor extends AbstractCommand {
         }
 
         const words = await this.service.listWords(subargs[0]);
-        if (words) {
+        if (words && 0 < words.length) {
             return words.join('\n');
         } else {
             return Promise.resolve(`${subargs[0]} にはまだ何も登録されていません。`);

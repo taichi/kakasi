@@ -97,9 +97,16 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
     const context = new Context(user);
     context.evaluate(repos, unbanged)
         .then((result: string) => {
-            rtm.sendMessage(`${result}`, msg.channel);
-        }).catch((err: string) => {
-            rtm.sendMessage(err, msg.channel);
+            if (result && 0 < result.trim().length) {
+                rtm.sendMessage(`${result}`, msg.channel);
+            }
+            // tslint:disable-next-line:no-any
+        }).catch((err: any) => {
+            if (err instanceof Error) {
+                rtm.sendMessage(err.message, msg.channel);
+            } else {
+                rtm.sendMessage(err, msg.channel);
+            }
         });
 });
 
