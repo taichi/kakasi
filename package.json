@@ -49,7 +49,6 @@
     "test:service": "jest test/service/",
     "watch:test": "jest --watch",
     "cover": "jest --coverage",
-    "clibot": "ts-node test/bot/clibot.ts config.json",
     "slackbot": "ts-node src/bot/slackbot.ts config.json",
     "postinstall": "cp-file patch/slack.d.ts node_modules/@slack/client/index.d.ts"
   },
