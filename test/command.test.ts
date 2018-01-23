@@ -1,35 +1,29 @@
 import { Container } from 'inversify';
 
-import { CommandFactory, CommandRepository, core } from '../src/command';
+import { CommandRepository, DEFAULT_COMMAND } from '../src/command';
+import { Echo } from '../src/command/echo';
 import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
 
 import { dummy } from './testutil';
 
 test('CommandRepository', async () => {
-    const df = async (config: Config, args: string[]) => { return { execute: async () => args.join(' ') }; };
-    const cr = new CommandRepository(DEFAULT, df, new Container());
+    const container = new Container();
+    container.bind(DEFAULT_COMMAND).to(Echo);
+    const cr = new CommandRepository(container);
 
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        cr.register(a, async (config: Config, args: string[]) => { return { execute: async () => a }; });
+        const val = {
+            initialize: () => val,
+            execute: async () => a,
+        };
+        container.bind(a).toConstantValue(val);
     }
 
-    const aaa = await cr.find(['aaa', 'bbb', 'cccc']);
+    const aaa = cr.find(['aaa', 'bbb', 'cccc']);
     await aaa.execute(new Context(dummy()))
         .then((actual: string) => expect(actual).toBe('aaa'));
-    const ddd = await cr.find(['zzz', 'xxxx', 'yyyy']);
+    const ddd = cr.find(['zzz', 'xxxx', 'yyyy']);
     await ddd.execute(new Context(dummy()))
         .then((actual: string) => expect(actual).toBe('zzz xxxx yyyy'));
-});
-
-test('CommandRepository', async () => {
-    const container = new Container();
-    const cr = core(DEFAULT, container);
-
-    const cmd = await cr.find(['echo', 'aaa', 'bbb']);
-
-    await cmd.execute(new Context(dummy()))
-        .then((s: string) => {
-            expect(s).toBe('aaa bbb');
-        });
 });

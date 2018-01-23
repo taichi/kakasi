@@ -3,7 +3,6 @@ import * as sqlite from 'sqlite';
 
 import { TYPES } from '../../src/service';
 import { SqliteUserService } from '../../src/service/user';
-import { TYPES as DB } from '../../src/sqliteutil';
 
 import { dummy, initialize } from '../testutil';
 

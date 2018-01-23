@@ -1,20 +1,8 @@
-import { Config } from '../config';
-import { Context } from '../context';
-import { IUserService, SqliteUserService, UserAliasModel, UserModel } from '../service/user';
-import { SqliteDict } from './dict.sqlite';
-import { factory as echoFactory } from './echo';
-import { ICommand, STORAGE } from './index';
+import { inject, injectable } from 'inversify';
 
-export function factory(config: Config, cmd: string[]): Promise<ICommand> {
-    switch (config.storage) {
-        case 'memory':
-            return echoFactory(config, cmd);
-        case 'sqlite':
-            return Promise.resolve(new User(cmd));
-        default:
-            return echoFactory(config, cmd);
-    }
-}
+import { Context } from '../context';
+import { IUserService, TYPES, UserAliasModel, UserModel } from '../service';
+import { AbstractCommand } from './index';
 
 // tslint:disable-next-line:no-multiline-string
 const HELP = `
@@ -64,10 +52,12 @@ user [add|update name|update birthday|alias|remove|info|list|list alias|help]
         ユーザ名 ricky に関連する別名の一覧を表示します。
 `;
 
-export class User implements ICommand {
-    private args: string[];
-    constructor(cmd: string[]) {
-        this.args = cmd;
+@injectable()
+export class User extends AbstractCommand {
+    private service: IUserService;
+    constructor( @inject(TYPES.User) service: IUserService) {
+        super();
+        this.service = service;
     }
 
     public execute(context: Context): Promise<string> {
@@ -75,32 +65,26 @@ export class User implements ICommand {
             return Promise.reject('user コマンドは引数が一つ以上必要です。');
         }
 
-        const db = context.get(STORAGE);
-        if (!db) {
-            return Promise.reject('データベースがセットアップされていません。');
-        }
-        const service = new SqliteUserService(async () => db);
-
         const subcmd = this.args[0];
         switch (subcmd.toLowerCase()) {
             case 'add':
             case 'join':
-                return this.add(context, service);
+                return this.add(context);
             case 'update':
-                return this.update(context, service);
+                return this.update(context);
             case 'alias':
             case 'ln':
-                return this.alias(context, service);
+                return this.alias(context);
             case 'delete':
             case 'remove':
             case 'del':
             case 'rm':
-                return this.remove(context, service);
+                return this.remove(context);
             case 'info':
-                return this.info(context, service);
+                return this.info(context);
             case 'list':
             case 'ls':
-                return this.list(context, service);
+                return this.list(context);
             case 'help':
             case '?':
             default:
@@ -112,14 +96,14 @@ export class User implements ICommand {
         return Promise.resolve(HELP);
     }
 
-    public async add(context: Context, service: IUserService): Promise<string> {
+    public async add(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         const info = this.extractAddParams(context, subargs);
-        await service.saveUser(context.user.id, info.name, info.birthday);
+        await this.service.saveUser(context.user.id, info.name, info.birthday);
         return Promise.resolve(`${info.name} を登録しました。`);
     }
 
-    public async update(context: Context, service: IUserService): Promise<string> {
+    public async update(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (subargs.length < 2) {
             return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには 変更する属性とその内容が必要です。`);
@@ -127,64 +111,64 @@ export class User implements ICommand {
 
         switch (subargs[0].toLowerCase()) {
             case 'name':
-                return service.updateUserName(context.user.id, subargs[1])
+                return this.service.updateUserName(context.user.id, subargs[1])
                     .then(() => `ユーザ名を ${subargs[1]} に変更しました。`);
             case 'birthday':
-                return service.updateBirthday(context.user.id, subargs[1])
+                return this.service.updateBirthday(context.user.id, subargs[1])
                     .then(() => `誕生日を ${subargs[1]} に変更しました。`);
             default:
                 return Promise.reject(`${subargs[0]} は、 user update コマンドでサポートされていない属性です。`);
         }
     }
 
-    public async alias(context: Context, service: IUserService): Promise<string> {
+    public async alias(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (subargs.length < 1) {
             return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには 新しいユーザ名 が必要です。`);
         }
 
-        const info = await this.adjustUserInfo(context, service, subargs);
-        await service.aliasUser(context.user.id, info.fromuid, info.toname);
+        const info = await this.adjustUserInfo(context, subargs);
+        await this.service.aliasUser(context.user.id, info.fromuid, info.toname);
         return Promise.resolve(`${info.toname} を登録しました。`);
     }
 
-    public async remove(context: Context, service: IUserService): Promise<string> {
+    public async remove(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (subargs.length < 2 || subargs[0].toLowerCase() !== 'alias') {
             return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには alias と ユーザ名 が必要です。`);
         }
 
         const name = subargs[1];
-        const n = await service.deleteAliasByName(name);
+        const n = await this.service.deleteAliasByName(name);
         if (!n || n < 1) {
             return Promise.resolve(`${name} は削除されませんでした。`);
         }
         return Promise.resolve(`${name} を削除しました。`);
     }
 
-    public async info(context: Context, service: IUserService): Promise<string> {
+    public async info(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
         if (0 < subargs.length) {
             const name = subargs[0];
-            const nrow = await service.findUserByName(name);
+            const nrow = await this.service.findUserByName(name);
             if (nrow) {
                 return Promise.resolve(this.toString(nrow));
             }
             return Promise.reject(`${name} というユーザは登録されていません。`);
         }
 
-        const user = await service.findUserById(context.user.id);
+        const user = await this.service.findUserById(context.user.id);
         if (user) {
             return Promise.resolve(this.toString(user));
         }
         return Promise.reject('あなたユーザは登録されていません。');
     }
 
-    public async list(context: Context, service: IUserService): Promise<string> {
+    public async list(context: Context): Promise<string> {
         const subargs = this.args.slice(1);
 
         if (subargs.length < 1) {
-            const list = await service.listUser();
+            const list = await this.service.listUser();
             return Promise.resolve(list.map(this.toString).join('\n'));
         }
 
@@ -192,19 +176,19 @@ export class User implements ICommand {
             return Promise.reject(`userコマンドの ${this.args[0]} サブコマンドには alias が必要です。`);
         }
         if (subargs.length === 1) {
-            const user = await service.findUserById(context.user.id);
+            const user = await this.service.findUserById(context.user.id);
             if (!user) {
                 return Promise.reject('あなたユーザは登録されていません。');
             }
-            return this.listAliasById(service, user);
+            return this.listAliasById(this.service, user);
         }
 
         const name = subargs[1];
-        const resolvedUser = await service.findUserByName(name);
+        const resolvedUser = await this.service.findUserByName(name);
         if (!resolvedUser) {
             return Promise.reject(`${name} はユーザ登録されていません。`);
         }
-        return this.listAliasById(service, resolvedUser);
+        return this.listAliasById(this.service, resolvedUser);
     }
 
     private async listAliasById(service: IUserService, user: UserModel): Promise<string> {
@@ -249,7 +233,7 @@ export class User implements ICommand {
         return `ユーザID:${user.userid} ユーザ名:${user.name} 誕生日:${user.birthday} 登録日:${user.timestamp}`;
     }
 
-    private async adjustUserInfo(context: Context, service: IUserService, subargs: string[]):
+    private async adjustUserInfo(context: Context, subargs: string[]):
         Promise<{ fromuid: string, toname: string }> {
 
         if (subargs.length === 1) {
@@ -259,7 +243,7 @@ export class User implements ICommand {
             };
         }
 
-        const u = await service.findUserByName(subargs[0]);
+        const u = await this.service.findUserByName(subargs[0]);
         if (!u) {
             return Promise.reject(`${subargs[0]} はユーザとして登録されていません。`);
         }

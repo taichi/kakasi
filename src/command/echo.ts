@@ -1,16 +1,10 @@
-import { Config } from '../config';
+import { injectable } from 'inversify';
+
 import { Context } from '../context';
-import { ICommand } from './index';
+import { AbstractCommand } from './index';
 
-export function factory(config: Config, cmd: string[]): Promise<ICommand> {
-    return Promise.resolve(new Echo(cmd));
-}
-
-export class Echo implements ICommand {
-    private args: string[];
-    constructor(cmd: string[]) {
-        this.args = cmd;
-    }
+@injectable()
+export class Echo extends AbstractCommand {
     public execute(context: Context): Promise<string> {
         return Promise.resolve(this.args.join(' '));
     }

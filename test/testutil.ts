@@ -23,63 +23,25 @@ export function dummy(): RuntimeUser {
     };
 }
 
-export type DbRoom = {
-    setup(...args: string[]): Promise<void>;
-
-    open(): Promise<sqlite.Database>;
-
-    close(): Promise<void>;
-
-    teardown(): Promise<void>;
-};
-
-export function makeDbRoom(database: string): DbRoom {
-    let conn: sqlite.Database;
-    return {
-        setup: async (...args: string[]) => {
-            await unlink(database).catch(() => {
-                // suppress error
-            });
-            const db = await sqlite.open(database);
-            for (const p of args) {
-                const sql = await readFile(p);
-                await db.exec(sql.toString('utf-8'));
-            }
-
-            await db.close();
-        },
-
-        open: async (): Promise<sqlite.Database> => {
-            conn = await sqlite.open(database);
-            return conn;
-        },
-
-        close: async (): Promise<void> => {
-            return conn.close();
-        },
-
-        teardown: async () => {
-            await unlink(database).catch(() => {
-                // suppress error
-            });
-        },
-    };
-}
-
 export const initialize = (container: Container, database: string, ...queries: string[]) => {
     let conn: sqlite.Database;
+    container.bind(TYPES.DatabaseProvider)
+        .toProvider<sqlite.Database>(() => async () => conn);
     return {
         setup: async () => {
             await unlink(database).catch(() => {
                 // suppress error
             });
             conn = await sqlite.open(database);
-            container.bind(TYPES.DatabaseProvider)
-                .toProvider<sqlite.Database>(() => async () => conn);
             for (const p of queries) {
                 const sql = await readFile(p);
                 await conn.exec(sql.toString('utf-8'));
             }
+        },
+
+        // tslint:disable-next-line:no-any
+        get: async <T>(sql: string, ...args: any[]): Promise<T> => {
+            return conn.get<T>(sql, ...args);
         },
 
         teardown: async () => {
