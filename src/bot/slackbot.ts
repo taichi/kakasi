@@ -1,15 +1,21 @@
 // tslint:disable:no-console
 
+// tslint:disable-next-line:no-import-side-effect
+import 'reflect-metadata';
+
 // see. https://github.com/slackapi/node-slack-sdk/pull/329
 import {
     CLIENT_EVENTS, FullUserResult, MessageEvent, RTM_EVENTS,
     RtmClient, RtmStartResult, UsersListResult, WebClient,
 } from '@slack/client';
+import { Container } from 'inversify';
 import { Database, open } from 'sqlite';
 
-import { core, ICommandRepository, STORAGE } from '../command';
+import { CommandRepository, CORE_MODULE } from '../command';
 import { Config, load } from '../config';
 import { Context } from '../context';
+import { SQLITE_MODULE } from '../service';
+import { TYPES } from '../sqliteutil';
 import { RuntimeUser } from '../user';
 
 const config = load(process.argv[2]);
@@ -26,10 +32,17 @@ const appData = {
     users: new Map<string, RuntimeUser>(),
 };
 
-const repos = core(config);
 let db: Database;
 Promise.resolve(open(config.sqlite ? config.sqlite.filename : 'kakasi.sqlite'))
     .then((d: Database) => db = d);
+
+const container = new Container();
+container.bind(TYPES.DatabaseProvider)
+    .toProvider<Database>(() => async () => db);
+container.load(SQLITE_MODULE);
+container.load(CORE_MODULE);
+
+const repos = new CommandRepository(container);
 
 //@ts-ignore
 rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (connectData: RtmStartResult) => {
@@ -83,7 +96,6 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
     };
 
     const context = new Context(user);
-    context.set(STORAGE, db);
     context.evaluate(repos, unbanged)
         .then((result: string) => {
             rtm.sendMessage(`${result}`, msg.channel);
