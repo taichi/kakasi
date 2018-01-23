@@ -1,0 +1,10 @@
+insert into user (userid, name, birthday) values ("aaa", "bbb", "0220");
+insert into user (userid, name, birthday) values ("xxx", "ddd", "1222");
+insert into user (userid, name, birthday) values ("eee", "fff", "0410");
+insert into user (userid, name, birthday) values ("ggg", "hhh", "0410");
+insert into user (userid, name, birthday) values ("iii", "jjj", "0410");
+insert into user (userid, name, birthday) values ("kkk", "lll", "0410");
+insert into kudos (userid, quantity) values ('xxx', 17);
+insert into kudos (userid, quantity) values ('ggg', 13);
+insert into kudos (userid, quantity) values ('iii', 7);
+insert into kudos (userid, quantity) values ('kkk', 11);

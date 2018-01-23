@@ -45,7 +45,7 @@
     "graph": "nearley-railroad src/math.ne -o grammar.html",
     "test": "jest",
     "test:parser": "jest test/parser.test.ts",
-    "test:command": "jest test/command/",
+    "test:command": "jest test/command/kudos.sqlite.test.ts",
     "test:service": "jest test/service/",
     "watch:test": "jest --watch",
     "cover": "jest --coverage",

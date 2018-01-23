@@ -1,6 +1,5 @@
 import { inject, injectable } from 'inversify';
 import * as moment from 'moment';
-import * as sqlite from 'sqlite';
 
 import { DatabaseProvider, doTransaction, TYPES } from '../sqliteutil';
 
