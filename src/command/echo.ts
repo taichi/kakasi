@@ -1,7 +1,7 @@
 import { injectable } from 'inversify';
 
 import { Context } from '../context';
-import { AbstractCommand } from './index';
+import { AbstractCommand } from './base';
 
 @injectable()
 export class Echo extends AbstractCommand {

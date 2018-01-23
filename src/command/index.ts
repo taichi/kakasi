@@ -12,16 +12,6 @@ export interface ICommand {
     execute(context: Context): Promise<string>;
 }
 
-@injectable()
-export abstract class AbstractCommand implements ICommand {
-    protected args: string[];
-    public initialize(args: string[]): this {
-        this.args = args;
-        return this;
-    }
-    public abstract execute(context: Context): Promise<string>;
-}
-
 export interface ICommandRepository {
     find(command: string[]): ICommand;
 }

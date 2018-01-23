@@ -2,7 +2,7 @@ import { inject, injectable } from 'inversify';
 
 import { Context } from '../context';
 import { IUserService, TYPES, UserAliasModel, UserModel } from '../service';
-import { AbstractCommand } from './index';
+import { AbstractCommand } from './base';
 
 // tslint:disable-next-line:no-multiline-string
 const HELP = `

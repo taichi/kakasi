@@ -94,7 +94,6 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
         displayName: '',
         email: '',
     };
-
     const context = new Context(user);
     context.evaluate(repos, unbanged)
         .then((result: string) => {

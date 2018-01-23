@@ -26,8 +26,8 @@ export class Visitor implements IVisitor<Promise<string>> {
     }
 
     public visitExpression(n: ExpressionNode<Promise<string>>): Promise<string> {
-        return this.repos.find(n.value.map((v: TextNode<Promise<string>>) => v.value))
-            .execute(this.context);
+        const cmd = this.repos.find(n.value.map((v: TextNode<Promise<string>>) => v.value));
+        return cmd.execute(this.context);
     }
 
     public visitCombo(n: ComboNode<Promise<string>>): Promise<string> {

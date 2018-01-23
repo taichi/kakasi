@@ -1,26 +1,34 @@
-// tslint:disable-next-line:import-name
-import { CommandFactory, CommandRepository, ICommand } from '../src/command';
+import { Container } from 'inversify';
+
+import { CommandRepository, DEFAULT_COMMAND, ICommand } from '../src/command';
 import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
 import { dummy } from './testutil';
 
 test('evaluate', () => {
-    const df = (config: Config, args: string[]) => {
-        return Promise.resolve({
-            execute: (): Promise<string> => {
-                fail();
+    const defval = {
+        initialize: () => defval,
+        execute: async () => {
+            fail();
 
-                return Promise.reject('fail');
-            },
-        });
+            return Promise.reject('fail');
+        },
     };
-    const cr = new CommandRepository(DEFAULT, df);
+    const container = new Container();
+    container.bind(DEFAULT_COMMAND).toConstantValue(defval);
+
+    const cr = new CommandRepository(container);
 
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        const fn = (config: Config, args: string[]) => {
-            return Promise.resolve({ execute: () => Promise.resolve(`${a} ${args.join('_')}`) });
+        let args = [];
+        const val = {
+            initialize: (ary: string[]) => {
+                args = ary;
+                return val;
+            },
+            execute: async () => `${a} ${args.join('_')}`,
         };
-        cr.register(a, fn);
+        container.bind(a).toConstantValue(val);
     }
 
     const ctx = new Context(dummy());
@@ -32,21 +40,28 @@ test('evaluate', () => {
 });
 
 test('evaluate', () => {
-    const df = (config: Config, args: string[]) => {
-        return Promise.resolve({
-            execute: (): Promise<string> => {
-                fail();
+    const defval = {
+        initialize: () => defval,
+        execute: async () => {
+            fail();
 
-                return Promise.reject('fail');
-            },
-        });
+            return Promise.reject('fail');
+        },
     };
-    const cr = new CommandRepository(DEFAULT, df);
+    const container = new Container();
+    container.bind(DEFAULT_COMMAND).toConstantValue(defval);
+
+    const cr = new CommandRepository(container);
     for (const a of ['aaa', 'bbb', 'ccc']) {
-        const fn = (config: Config, args: string[]) => {
-            return Promise.resolve({ execute: () => Promise.resolve(`${a} ${args.join('_')}`) });
+        let args: string[];
+        const val = {
+            initialize: (ary: string[]) => {
+                args = ary;
+                return val;
+            },
+            execute: () => Promise.resolve(`${a} ${args.join('_')}`),
         };
-        cr.register(a, fn);
+        container.bind(a).toConstantValue(val);
     }
 
     const ctx = new Context(dummy());

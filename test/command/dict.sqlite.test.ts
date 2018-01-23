@@ -202,7 +202,7 @@ describe('dict', () => {
         dictEd.initialize(['remove', 'aaa', 'zzz']);
 
         expect(await dictEd.execute(context)).toBeTruthy();
-        const row = await db.get('select count(id) as cnt from word_list where id_keyword = 1');
+        const row = await db.get<{ cnt: number }>('select count(id) as cnt from word_list where id_keyword = 1');
         expect(row.cnt).toBe(2);
     });
 
