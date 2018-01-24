@@ -170,4 +170,95 @@ describe('kudos', () => {
 
         expect(await kudos.execute(context)).toBeTruthy();
     });
+
+    test('rank', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['rank']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+    });
+
+    test('sender_rank', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['sender_rank']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+    });
+
+    test('history', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['history']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+    });
+
+    test('reaction > add > few args', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['reaction', 'add']);
+
+        return kudos.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('reaction > add', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['reaction', 'add', ':+1:']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+        const row = await db.get<{ op: number, icon: string }>('select op, icon from kudos_reaction where icon = ":+1:"');
+        expect(row).toBeTruthy();
+        expect(row.op).toBe(1);
+    });
+
+    test('reaction > add > invalid number', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['reaction', 'add', ':+1:', '3z']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+        const row = await db.get<{ op: number, icon: string }>('select op, icon from kudos_reaction where icon = ":+1:"');
+        expect(row).toBeTruthy();
+        expect(row.op).toBe(1);
+    });
+
+    test('reaction > add', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['reaction', 'add', ':+1:', '3']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+        const row = await db.get<{ op: number, icon: string }>('select op, icon from kudos_reaction where icon = ":+1:"');
+        expect(row).toBeTruthy();
+        expect(row.op).toBe(3);
+    });
+
+    test('reaction > delete > few args', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['reaction', 'remove']);
+
+        return kudos.execute(context)
+            .then(fail)
+            .catch((msg: Error) => {
+                expect(msg.message).toBeFalsy();
+                expect(msg).toBeTruthy();
+            });
+    });
+
+    test('reaction > delete', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['reaction', 'rm', ':+1:']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+        const row = await db.get<{ cnt: number }>('select count(id) from kudos_reaction');
+        expect(row.cnt).toBe(1);
+    });
+
+    test('reaction > list', async () => {
+        const context = new Context(dummy());
+        kudos.initialize(['reaction', 'list']);
+
+        expect(await kudos.execute(context)).toBeTruthy();
+    });
 });

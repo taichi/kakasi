@@ -12,3 +12,11 @@ create table kudos_history (
     op            integer not null,
     timestamp     timestamp default current_timestamp
 );
+
+create table kudos_reaction (
+    id            integer primary key autoincrement,
+    userid        text not null,
+    icon          text not null unique,
+    op            integer not null default 1,
+    timestamp     timestamp default current_timestamp
+)
