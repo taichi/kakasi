@@ -1,9 +1,10 @@
 import { inject, injectable } from 'inversify';
 
 import { Context } from '../context';
-import { KudosService, TYPES } from '../service';
-import { KudosHistoryModel, KudosRankingModel, KudosSenderRankingModel, ReactionModel } from '../service/kudos';
-import { UserModel, UserService } from '../service/user';
+import {
+    KudosHistoryModel, KudosRankingModel, KudosSenderRankingModel, KudosService,
+    ReactionModel, TYPES, UserModel, UserService,
+} from '../service';
 import { AbstractCommand } from './base';
 
 // tslint:disable-next-line:no-multiline-string

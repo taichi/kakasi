@@ -1,6 +1,6 @@
 import { Container } from 'inversify';
 
-import { CommandRepository, DEFAULT_COMMAND, ICommand } from '../src/command';
+import { Command, ContainerCommandRepository, TYPES } from '../src/command';
 import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
 import { dummy } from './testutil';
@@ -15,9 +15,9 @@ test('evaluate', () => {
         },
     };
     const container = new Container();
-    container.bind(DEFAULT_COMMAND).toConstantValue(defval);
+    container.bind(TYPES.DEFAULT_COMMAND).toConstantValue(defval);
 
-    const cr = new CommandRepository(container);
+    const cr = new ContainerCommandRepository(container);
 
     for (const a of ['aaa', 'bbb', 'ccc']) {
         let args = [];
@@ -49,9 +49,9 @@ test('evaluate', () => {
         },
     };
     const container = new Container();
-    container.bind(DEFAULT_COMMAND).toConstantValue(defval);
+    container.bind(TYPES.DEFAULT_COMMAND).toConstantValue(defval);
 
-    const cr = new CommandRepository(container);
+    const cr = new ContainerCommandRepository(container);
     for (const a of ['aaa', 'bbb', 'ccc']) {
         let args: string[];
         const val = {

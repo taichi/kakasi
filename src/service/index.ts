@@ -12,7 +12,7 @@ export const TYPES = {
 
 export { UserService, UserAliasModel, UserModel } from './user';
 export { DictService } from './dict';
-export { KudosService } from './kudos';
+export { KudosService, KudosHistoryModel, KudosRankingModel, KudosSenderRankingModel, ReactionModel } from './kudos';
 
 export const SQLITE_MODULE = new ContainerModule(
     (

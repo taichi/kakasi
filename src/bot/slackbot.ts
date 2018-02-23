@@ -11,12 +11,13 @@ import {
 import { Container } from 'inversify';
 import { Database, open } from 'sqlite';
 
-import { CommandRepository, CORE_MODULE } from '../command';
+import { ContainerCommandRepository, CORE_MODULE, TYPES as COMMAND_TYPES } from '../command';
 import { Config, load } from '../config';
 import { Context } from '../context';
 import { SQLITE_MODULE } from '../service';
 import { TYPES } from '../sqliteutil';
 import { RuntimeUser } from '../user';
+import { SLACK_MODULE, PROCESSOR, Processor } from '../processor';
 
 const config = load(process.argv[2]);
 
@@ -37,12 +38,14 @@ Promise.resolve(open(config.sqlite ? config.sqlite.filename : 'kakasi.sqlite'))
     .then((d: Database) => db = d);
 
 const container = new Container();
+const repos = new ContainerCommandRepository(container);
+container.bind(COMMAND_TYPES.REPOSITORY).toConstantValue(repos);
+
 container.bind(TYPES.DatabaseProvider)
     .toProvider<Database>(() => async () => db);
 container.load(SQLITE_MODULE);
 container.load(CORE_MODULE);
-
-const repos = new CommandRepository(container);
+container.load(SLACK_MODULE);
 
 //@ts-ignore
 rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (connectData: RtmStartResult) => {
@@ -72,22 +75,12 @@ const removeBackspace = (m: string): string => {
     return m ? m.replace('\u0008', '') : '';
 };
 
-const bang = (m: string): boolean => {
-    return !!m && 2 < m.length && m.startsWith('!');
-};
-
 rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
     if (msg.user === 'USLACKBOT' || msg.user === appData.selfId) {
         return;
     }
 
     const text = removeBackspace(msg.text.trim());
-    if (bang(text) === false) {
-        return;
-    }
-
-    const unbanged = text.slice(1);
-
     const u = appData.users.get(msg.user);
     const user = u ? u : {
         id: msg.user,
@@ -95,8 +88,10 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
         email: '',
     };
     const context = new Context(user);
-    context.evaluate(repos, unbanged)
-        .then((result: string) => {
+    const pros = container.getAll<Processor<string>>(PROCESSOR);
+
+    for (let p of pros.filter(p => p.supports(text))) {
+        p.process(context, text).then((result: string) => {
             if (result && 0 < result.trim().length) {
                 rtm.sendMessage(`${result}`, msg.channel);
             }
@@ -108,6 +103,7 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
                 rtm.sendMessage(err, msg.channel);
             }
         });
+    }
 });
 
 rtm.start();

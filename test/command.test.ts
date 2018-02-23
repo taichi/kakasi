@@ -1,6 +1,6 @@
 import { Container } from 'inversify';
 
-import { CommandRepository, DEFAULT_COMMAND } from '../src/command';
+import { ContainerCommandRepository, TYPES } from '../src/command';
 import { Echo } from '../src/command/echo';
 import { Config, DEFAULT } from '../src/config';
 import { Context } from '../src/context';
@@ -9,8 +9,8 @@ import { dummy } from './testutil';
 
 test('CommandRepository', async () => {
     const container = new Container();
-    container.bind(DEFAULT_COMMAND).to(Echo);
-    const cr = new CommandRepository(container);
+    container.bind(TYPES.DEFAULT_COMMAND).to(Echo);
+    const cr = new ContainerCommandRepository(container);
 
     for (const a of ['aaa', 'bbb', 'ccc']) {
         const val = {
