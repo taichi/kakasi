@@ -8,5 +8,6 @@ export function parse<R>(value: string): Node<R>[] {
     const parser = new nearley.Parser(GRAMMER);
     const results = parser.feed(value).finish();
 
+    // tslint:disable-next-line:no-unsafe-any
     return results[0];
 }

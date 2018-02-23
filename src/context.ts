@@ -1,4 +1,4 @@
-import { ICommand, ICommandRepository } from './command';
+import { Command, CommandRepository } from './command';
 import { evaluate } from './interpreter';
 import { parse } from './parser';
 import { make, Random } from './random';
@@ -35,10 +35,10 @@ export class Context {
         return this.slot.delete(key);
     }
 
-    public evaluate(repos: ICommandRepository, message: string): Promise<string> {
+    public evaluate(repos: CommandRepository, message: string): Promise<string> {
         const nodes = parse<Promise<string>>(message.trim());
 
         return evaluate(repos, this, nodes)
-            .then((cmd: ICommand) => cmd.execute(this));
+            .then((cmd: Command) => cmd.execute(this));
     }
 }

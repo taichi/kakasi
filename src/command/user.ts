@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 
 import { Context } from '../context';
-import { IUserService, TYPES, UserAliasModel, UserModel } from '../service';
+import { TYPES, UserAliasModel, UserModel, UserService } from '../service';
 import { AbstractCommand } from './base';
 
 // tslint:disable-next-line:no-multiline-string
@@ -54,8 +54,8 @@ user [add|update name|update birthday|alias|remove|info|list|list alias|help]
 
 @injectable()
 export class User extends AbstractCommand {
-    private service: IUserService;
-    constructor( @inject(TYPES.User) service: IUserService) {
+    private service: UserService;
+    constructor( @inject(TYPES.User) service: UserService) {
         super();
         this.service = service;
     }
@@ -191,7 +191,7 @@ export class User extends AbstractCommand {
         return this.listAliasById(this.service, resolvedUser);
     }
 
-    private async listAliasById(service: IUserService, user: UserModel): Promise<string> {
+    private async listAliasById(service: UserService, user: UserModel): Promise<string> {
         const list = await service.listAliasById(user.userid);
         const msg = [`${user.name} の別名は`].concat(
             list.map((ua: UserAliasModel) => {

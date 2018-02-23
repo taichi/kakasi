@@ -1,9 +1,9 @@
 import { inject, injectable } from 'inversify';
 
 import { Context } from '../context';
-import { IKudosService, TYPES } from '../service';
+import { KudosService, TYPES } from '../service';
 import { KudosHistoryModel, KudosRankingModel, KudosSenderRankingModel, ReactionModel } from '../service/kudos';
-import { IUserService, UserModel } from '../service/user';
+import { UserModel, UserService } from '../service/user';
 import { AbstractCommand } from './base';
 
 // tslint:disable-next-line:no-multiline-string
@@ -51,10 +51,10 @@ kudos [++|--|show|ranking|sender_ranking|history|reaction|help]
 
 @injectable()
 export class Kudos extends AbstractCommand {
-    private user: IUserService;
-    private kudos: IKudosService;
+    private user: UserService;
+    private kudos: KudosService;
 
-    constructor( @inject(TYPES.User) user: IUserService, @inject(TYPES.Kudos) kudos: IKudosService) {
+    constructor( @inject(TYPES.User) user: UserService, @inject(TYPES.Kudos) kudos: KudosService) {
         super();
         this.user = user;
         this.kudos = kudos;

@@ -1,10 +1,10 @@
 import { injectable } from 'inversify';
 
 import { Context } from '../context';
-import { ICommand } from './';
+import { Command } from './';
 
 @injectable()
-export abstract class AbstractCommand implements ICommand {
+export abstract class AbstractCommand implements Command {
     protected args: string[];
     public initialize(args: string[]): this {
         this.args = args;

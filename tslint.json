@@ -3,6 +3,12 @@
         "tslint-microsoft-contrib"
     ],
     "rules": {
+        "interface-name": [
+            true,
+            "never-prefix"
+        ],
+        "completed-docs": false,
+        "strict-boolean-expressions": false,
         "no-backbone-get-set-outside-model": false,
         "mocha-no-side-effect-code": false,
         "missing-jsdoc": false,

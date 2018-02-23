@@ -38,7 +38,8 @@ export const DEFAULT: Config = {
 
 export function load(location: string): Config {
     const buf = fs.readFileSync(location);
-    const newone = JSON.parse(buf.toString('utf-8'));
+    // tslint:disable-next-line:no-unsafe-any
+    const newone: Config = JSON.parse(buf.toString('utf-8'));
 
-    return Object.assign(DEFAULT, newone);
+    return Object.assign<Config, Config>(DEFAULT, newone);
 }

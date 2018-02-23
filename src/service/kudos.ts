@@ -35,7 +35,7 @@ export type ReactionModel = {
     timestamp: string;
 };
 
-export interface IKudosService {
+export interface KudosService {
     findKudosById(userid: string): Promise<KudosModel | undefined>;
 
     listRanking(order: 'desc' | 'asc'): Promise<KudosRankingModel[]>;
@@ -56,7 +56,7 @@ export interface IKudosService {
 }
 
 @injectable()
-export class SqliteKudosService implements IKudosService {
+export class SqliteKudosService implements KudosService {
 
     private provider: DatabaseProvider;
 
@@ -128,7 +128,7 @@ export class SqliteKudosService implements IKudosService {
     public async saveReaction(userid: string, icon: string, op: number): Promise<void> {
         const db = await this.provider();
         return doTransaction(db, async () => {
-            const row = await db.get('select id from kudos_reaction where icon = ?', icon);
+            const row = await db.get<{ id: number }>('select id from kudos_reaction where icon = ?', icon);
             if (row && row.id) {
                 const sql = 'update kudos_reaction set userid = ?, icon = ?, op = ?, timestamp = current_timestamp where id = ?';
                 await db.run(sql, userid, icon, op, row.id);

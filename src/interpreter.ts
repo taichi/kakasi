@@ -1,22 +1,13 @@
-import { ICommand, ICommandRepository } from './command';
+import { Command, CommandRepository } from './command';
 import { Context } from './context';
-import { ComboNode, ExpressionNode, IVisitor, Node, TextNode } from './node';
+import { ComboNode, ExpressionNode, Node, TextNode, Visitor } from './node';
 
-export function evaluate(repos: ICommandRepository, context: Context, nodes: Node<Promise<string>>[]): Promise<ICommand> {
-    const visitor = new Visitor(repos, context);
+export class DefaultVisitor implements Visitor<Promise<string>> {
 
-    const pros = nodes.map((n: Node<Promise<string>>): Promise<string> => n.accept(visitor));
-
-    return Promise.all(pros)
-        .then((texts: string[]) => repos.find(texts));
-}
-
-export class Visitor implements IVisitor<Promise<string>> {
-
-    private repos: ICommandRepository;
+    private repos: CommandRepository;
     private context: Context;
 
-    constructor(repos: ICommandRepository, context: Context) {
+    constructor(repos: CommandRepository, context: Context) {
         this.repos = repos;
         this.context = context;
     }
@@ -34,4 +25,13 @@ export class Visitor implements IVisitor<Promise<string>> {
         return Promise.all(n.value.map((v: Node<Promise<string>>) => v.accept(this)))
             .then((a: string[]) => a.join(''));
     }
+}
+
+export function evaluate(repos: CommandRepository, context: Context, nodes: Node<Promise<string>>[]): Promise<Command> {
+    const visitor = new DefaultVisitor(repos, context);
+
+    const pros = nodes.map((n: Node<Promise<string>>): Promise<string> => n.accept(visitor));
+
+    return Promise.all(pros)
+        .then((texts: string[]) => repos.find(texts));
 }

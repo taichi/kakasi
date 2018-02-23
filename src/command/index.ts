@@ -7,16 +7,16 @@ import { User } from './user';
 
 export const DEFAULT_COMMAND = Symbol.for('command/default');
 
-export interface ICommand {
+export interface Command {
     initialize(args: string[]): this;
     execute(context: Context): Promise<string>;
 }
 
-export interface ICommandRepository {
-    find(command: string[]): ICommand;
+export interface CommandRepository {
+    find(command: string[]): Command;
 }
 
-export class CommandRepository implements ICommandRepository {
+export class CommandRepository implements CommandRepository {
 
     private container: Container;
 
@@ -24,14 +24,15 @@ export class CommandRepository implements ICommandRepository {
         this.container = container;
     }
 
-    public find(command: string[]): ICommand {
+    public find(command: string[]): Command {
         const [key, ...body] = command;
         try {
-            const cmd = this.container.get<ICommand>(key.toLowerCase());
+            const cmd = this.container.get<Command>(key.toLowerCase());
             return cmd.initialize(body);
         } catch (e) {
-            if (e.message.startsWith('No matching bindings found')) {
-                const cmd = this.container.get<ICommand>(DEFAULT_COMMAND);
+            // tslint:disable-next-line:no-unsafe-any
+            if (e && e.message.startsWith('No matching bindings found')) {
+                const cmd = this.container.get<Command>(DEFAULT_COMMAND);
                 return cmd.initialize(command);
             }
             throw e;

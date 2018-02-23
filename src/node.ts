@@ -1,17 +1,17 @@
 
 export type Node<R> = TextNode<R> | ExpressionNode<R> | ComboNode<R>;
 
-export interface IAcceptable<R> {
-    accept(visitor: IVisitor<R>): R;
+export interface Acceptable<R> {
+    accept(visitor: Visitor<R>): R;
 }
 
-export interface IVisitor<R> {
+export interface Visitor<R> {
     visitText(n: TextNode<R>): R;
     visitExpression(n: ExpressionNode<R>): R;
     visitCombo(n: ComboNode<R>): R;
 }
 
-export class TextNode<R> implements IAcceptable<R> {
+export class TextNode<R> implements Acceptable<R> {
     public readonly value: string;
 
     constructor(value: string) {
@@ -25,12 +25,12 @@ export class TextNode<R> implements IAcceptable<R> {
         };
     }
 
-    public accept(visitor: IVisitor<R>): R {
+    public accept(visitor: Visitor<R>): R {
         return visitor.visitText(this);
     }
 }
 
-export class ExpressionNode<R> implements IAcceptable<R> {
+export class ExpressionNode<R> implements Acceptable<R> {
     public readonly value: TextNode<R>[];
 
     constructor(value: TextNode<R>[]) {
@@ -44,12 +44,12 @@ export class ExpressionNode<R> implements IAcceptable<R> {
         };
     }
 
-    public accept(visitor: IVisitor<R>): R {
+    public accept(visitor: Visitor<R>): R {
         return visitor.visitExpression(this);
     }
 }
 
-export class ComboNode<R> implements IAcceptable<R> {
+export class ComboNode<R> implements Acceptable<R> {
     public readonly value: (TextNode<R> | ExpressionNode<R>)[];
 
     constructor(value: (TextNode<R> | ExpressionNode<R>)[]) {
@@ -63,7 +63,7 @@ export class ComboNode<R> implements IAcceptable<R> {
         };
     }
 
-    public accept(visitor: IVisitor<R>): R {
+    public accept(visitor: Visitor<R>): R {
         return visitor.visitCombo(this);
     }
 }

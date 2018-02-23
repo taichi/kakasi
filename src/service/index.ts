@@ -10,9 +10,9 @@ export const TYPES = {
     Kudos: Symbol.for('KudosService'),
 };
 
-export { IUserService, UserAliasModel, UserModel } from './user';
-export { IDictService } from './dict';
-export { IKudosService } from './kudos';
+export { UserService, UserAliasModel, UserModel } from './user';
+export { DictService } from './dict';
+export { KudosService } from './kudos';
 
 export const SQLITE_MODULE = new ContainerModule(
     (

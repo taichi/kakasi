@@ -17,7 +17,7 @@ export type UserAliasModel = {
     timestamp: string;
 };
 
-export interface IUserService {
+export interface UserService {
 
     findUserById(userid: string): Promise<UserModel | undefined>;
 
@@ -66,7 +66,7 @@ where ua.userid = ?
 `;
 
 @injectable()
-export class SqliteUserService implements IUserService {
+export class SqliteUserService implements UserService {
 
     private provider: DatabaseProvider;
 

@@ -1,7 +1,7 @@
 import { inject, injectable } from 'inversify';
 
 import { Context } from '../context';
-import { IDictService, TYPES } from '../service';
+import { DictService, TYPES } from '../service';
 import { AbstractCommand } from './base';
 
 // tslint:disable-next-line:no-multiline-string
@@ -32,8 +32,8 @@ dict [list|add|delete|alias|help] ...
 
 @injectable()
 export class Dict extends AbstractCommand {
-    private service: IDictService;
-    constructor( @inject(TYPES.Dict) service: IDictService) {
+    private service: DictService;
+    constructor( @inject(TYPES.Dict) service: DictService) {
         super();
         this.service = service;
     }
@@ -52,8 +52,8 @@ export class Dict extends AbstractCommand {
 
 @injectable()
 export class DictEditor extends AbstractCommand {
-    private service: IDictService;
-    constructor( @inject(TYPES.Dict) service: IDictService) {
+    private service: DictService;
+    constructor( @inject(TYPES.Dict) service: DictService) {
         super();
         this.service = service;
     }

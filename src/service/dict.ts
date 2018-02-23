@@ -3,7 +3,7 @@ import * as sqlite from 'sqlite';
 
 import { DatabaseProvider, doTransaction, TYPES } from '../sqliteutil';
 
-export interface IDictService {
+export interface DictService {
     getWordRandomly(title: string): Promise<string | undefined>;
 
     listWords(title: string): Promise<string[]>;
@@ -84,7 +84,7 @@ where keyword.title = ?
 `;
 
 @injectable()
-export class SqliteDictService implements IDictService {
+export class SqliteDictService implements DictService {
     private provider: DatabaseProvider;
 
     constructor( @inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
@@ -127,7 +127,7 @@ export class SqliteDictService implements IDictService {
         const db = await this.provider();
 
         return doTransaction(db, async () => {
-            const row = await db.get(EXISTS_WORD, title, word, title, word);
+            const row = await db.get<{ id: number, id_keyword: string }>(EXISTS_WORD, title, word, title, word);
             if (!row) {
                 return Promise.reject(`${title} という辞書が無いか、それに登録された語がありません。`);
             }
