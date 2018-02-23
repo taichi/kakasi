@@ -251,7 +251,7 @@ describe('kudos', () => {
         kudos.initialize(['reaction', 'rm', ':+1:']);
 
         expect(await kudos.execute(context)).toBeTruthy();
-        const row = await db.get<{ cnt: number }>('select count(id) from kudos_reaction');
+        const row = await db.get<{ cnt: number }>('select count(id) as cnt from kudos_reaction');
         expect(row.cnt).toBe(1);
     });
 
