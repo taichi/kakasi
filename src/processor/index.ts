@@ -4,7 +4,10 @@ import { Context } from '../context';
 import { BangedMessageProcessor } from './banged';
 import { KudosMessageProcessor } from './kudos';
 
-export const PROCESSOR = Symbol.for('processor');
+export const TYPES = {
+    MESSAGE_PROCESSOR: Symbol.for('processor/message'),
+    REACTION_PROCESSOR: Symbol.for('processor/reaction'),
+};
 
 export interface Processor<T> {
 
@@ -18,7 +21,7 @@ export const SLACK_MODULE = new ContainerModule(
         isBound: interfaces.IsBound,
         rebind: interfaces.Rebind,
     ) => {
-        bind(PROCESSOR).to(BangedMessageProcessor);
-        bind(PROCESSOR).to(KudosMessageProcessor);
+        bind(TYPES.MESSAGE_PROCESSOR).to(BangedMessageProcessor);
+        bind(TYPES.MESSAGE_PROCESSOR).to(KudosMessageProcessor);
     },
 );

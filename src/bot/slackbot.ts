@@ -17,7 +17,7 @@ import { Context } from '../context';
 import { SQLITE_MODULE } from '../service';
 import { TYPES } from '../sqliteutil';
 import { RuntimeUser } from '../user';
-import { SLACK_MODULE, PROCESSOR, Processor } from '../processor';
+import { SLACK_MODULE, TYPES as PROS_TYPES, Processor } from '../processor';
 
 const config = load(process.argv[2]);
 
@@ -88,7 +88,7 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
         email: '',
     };
     const context = new Context(user);
-    const pros = container.getAll<Processor<string>>(PROCESSOR);
+    const pros = container.getAll<Processor<string>>(PROS_TYPES.MESSAGE_PROCESSOR);
 
     for (let p of pros) {
         p.process(context, text).then((result: string) => {
