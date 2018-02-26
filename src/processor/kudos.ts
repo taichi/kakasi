@@ -14,7 +14,7 @@ export class KudosMessageProcessor implements Processor<string> {
     private user: UserService;
     private kudos: KudosService;
 
-    constructor( @inject(TYPES.User) user: UserService, @inject(TYPES.Kudos) kudos: KudosService) {
+    constructor(@inject(TYPES.User) user: UserService, @inject(TYPES.Kudos) kudos: KudosService) {
         this.user = user;
         this.kudos = kudos;
     }

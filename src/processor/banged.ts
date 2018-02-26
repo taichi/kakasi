@@ -9,7 +9,7 @@ export class BangedMessageProcessor implements Processor<string> {
 
     private repos: CommandRepository;
 
-    public constructor( @inject(TYPES.REPOSITORY) repos: CommandRepository) {
+    public constructor(@inject(TYPES.REPOSITORY) repos: CommandRepository) {
         this.repos = repos;
     }
 

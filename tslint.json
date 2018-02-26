@@ -8,6 +8,7 @@
             "never-prefix"
         ],
         "completed-docs": false,
+        "binary-expression-operand-order": false,
         "strict-boolean-expressions": false,
         "no-backbone-get-set-outside-model": false,
         "mocha-no-side-effect-code": false,
