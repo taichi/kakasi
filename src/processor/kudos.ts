@@ -19,14 +19,9 @@ export class KudosMessageProcessor implements Processor<string> {
         this.kudos = kudos;
     }
 
-    public supports(message: string): boolean {
-        const matcher = KUDOS.exec(message);
-        return !!matcher && (!!matcher[1] || !!matcher[3]);
-    }
-
     public async process(context: Context, message: string): Promise<string> {
         const matcher = KUDOS.exec(message);
-        if (matcher) {
+        if (!!matcher && (!!matcher[1] || !!matcher[3])) {
             const target = matcher[2];
             const um = await this.user.findUserByName(target);
             if (um) {

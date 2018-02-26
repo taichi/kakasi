@@ -13,11 +13,14 @@ export class BangedMessageProcessor implements Processor<string> {
         this.repos = repos;
     }
 
-    public supports(message: string): boolean {
-        return !!message && 2 < message.length && message.startsWith('!');
+    public async process(context: Context, message: string): Promise<string> {
+        if (this.supports(message)) {
+            return context.evaluate(this.repos, message.slice(1));
+        }
+        return '';
     }
 
-    public process(context: Context, message: string): Promise<string> {
-        return context.evaluate(this.repos, message.slice(1));
+    private supports(message: string): boolean {
+        return !!message && 2 < message.length && message.startsWith('!');
     }
 }

@@ -8,8 +8,6 @@ export const PROCESSOR = Symbol.for('processor');
 
 export interface Processor<T> {
 
-    supports(message: T): boolean;
-
     process(context: Context, message: T): Promise<string>;
 }
 

@@ -90,7 +90,7 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
     const context = new Context(user);
     const pros = container.getAll<Processor<string>>(PROCESSOR);
 
-    for (let p of pros.filter(p => p.supports(text))) {
+    for (let p of pros) {
         p.process(context, text).then((result: string) => {
             if (result && 0 < result.trim().length) {
                 rtm.sendMessage(`${result}`, msg.channel);
