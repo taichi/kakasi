@@ -70,7 +70,7 @@ export class SqliteUserService implements UserService {
 
     private provider: DatabaseProvider;
 
-    constructor( @inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
+    constructor(@inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
         this.provider = provider;
     }
 

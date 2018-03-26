@@ -33,7 +33,7 @@ dict [list|add|delete|alias|help] ...
 @injectable()
 export class Dict extends AbstractCommand {
     private service: DictService;
-    constructor( @inject(TYPES.Dict) service: DictService) {
+    constructor(@inject(TYPES.Dict) service: DictService) {
         super();
         this.service = service;
     }
@@ -53,7 +53,7 @@ export class Dict extends AbstractCommand {
 @injectable()
 export class DictEditor extends AbstractCommand {
     private service: DictService;
-    constructor( @inject(TYPES.Dict) service: DictService) {
+    constructor(@inject(TYPES.Dict) service: DictService) {
         super();
         this.service = service;
     }

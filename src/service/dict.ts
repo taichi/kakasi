@@ -87,7 +87,7 @@ where keyword.title = ?
 export class SqliteDictService implements DictService {
     private provider: DatabaseProvider;
 
-    constructor( @inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
+    constructor(@inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
         this.provider = provider;
     }
 
@@ -127,7 +127,7 @@ export class SqliteDictService implements DictService {
         const db = await this.provider();
 
         return doTransaction(db, async () => {
-            const row = await db.get<{ id: number, id_keyword: string }>(EXISTS_WORD, title, word, title, word);
+            const row = await db.get<{ id: number; id_keyword: string }>(EXISTS_WORD, title, word, title, word);
             if (!row) {
                 return Promise.reject(`${title} という辞書が無いか、それに登録された語がありません。`);
             }

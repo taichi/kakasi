@@ -2,20 +2,20 @@ import * as fs from 'fs';
 
 export type Config = {
     slack: {
-        access_token: string,
-    },
+        access_token: string;
+    };
     twitter: {
-        access_token: string,
-    },
+        access_token: string;
+    };
     aws: {
-        access_token: string,
-    },
-    storage: 'memory' | 'sqlite',
+        access_token: string;
+    };
+    storage: 'memory' | 'sqlite';
     sqlite?: {
-        filename: string,
-        verbose: boolean,
-        cached: boolean,
-    },
+        filename: string;
+        verbose: boolean;
+        cached: boolean;
+    };
 };
 
 export const DEFAULT: Config = {
@@ -41,5 +41,5 @@ export function load(location: string): Config {
     // tslint:disable-next-line:no-unsafe-any
     const newone: Config = JSON.parse(buf.toString('utf-8'));
 
-    return Object.assign<Config, Config>(DEFAULT, newone);
+    return { ...DEFAULT, ...newone };
 }

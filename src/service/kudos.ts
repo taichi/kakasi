@@ -60,7 +60,7 @@ export class SqliteKudosService implements KudosService {
 
     private provider: DatabaseProvider;
 
-    constructor( @inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
+    constructor(@inject(TYPES.DatabaseProvider) provider: DatabaseProvider) {
         this.provider = provider;
     }
 
@@ -160,6 +160,6 @@ export class SqliteKudosService implements KudosService {
         const sql = `select kr.id, u.name username, kr.icon, kr.op, kr.timestamp
         from kudos_reaction kr inner join user u on kh.userid_from = u.userid
         where kr.icon = ?`;
-        return await db.get<ReactionModel>(sql, icon);
+        return db.get<ReactionModel>(sql, icon);
     }
 }

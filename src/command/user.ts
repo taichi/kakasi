@@ -55,7 +55,7 @@ user [add|update name|update birthday|alias|remove|info|list|list alias|help]
 @injectable()
 export class User extends AbstractCommand {
     private service: UserService;
-    constructor( @inject(TYPES.User) service: UserService) {
+    constructor(@inject(TYPES.User) service: UserService) {
         super();
         this.service = service;
     }
@@ -204,7 +204,7 @@ export class User extends AbstractCommand {
         return s === 'myself' || s === 'me';
     }
 
-    private extractAddParams(context: Context, subargs: string[]): { name: string, birthday: string } {
+    private extractAddParams(context: Context, subargs: string[]): { name: string; birthday: string } {
         const result = {
             name: context.user.displayName,
             birthday: '',
@@ -234,7 +234,7 @@ export class User extends AbstractCommand {
     }
 
     private async adjustUserInfo(context: Context, subargs: string[]):
-        Promise<{ fromuid: string, toname: string }> {
+        Promise<{ fromuid: string; toname: string }> {
 
         if (subargs.length === 1) {
             return {

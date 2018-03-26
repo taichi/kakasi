@@ -55,7 +55,7 @@ export class Kudos extends AbstractCommand {
     private user: UserService;
     private kudos: KudosService;
 
-    constructor( @inject(TYPES.User) user: UserService, @inject(TYPES.Kudos) kudos: KudosService) {
+    constructor(@inject(TYPES.User) user: UserService, @inject(TYPES.Kudos) kudos: KudosService) {
         super();
         this.user = user;
         this.kudos = kudos;
@@ -235,7 +235,7 @@ ${await this.formatRanks('asc')}
         return Promise.resolve(`${username}:${current} pt`);
     }
 
-    private async fillUerInfo(uid: string, un: string): Promise<{ userid: string, username: string }> {
+    private async fillUerInfo(uid: string, un: string): Promise<{ userid: string; username: string }> {
         if (un) {
             const uidm = await this.findUserByName(un);
             return {
