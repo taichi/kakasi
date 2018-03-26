@@ -3,11 +3,7 @@
 // tslint:disable-next-line:no-import-side-effect
 import 'reflect-metadata';
 
-// see. https://github.com/slackapi/node-slack-sdk/pull/329
-import {
-    CLIENT_EVENTS, FullUserResult, MessageEvent, RTM_EVENTS,
-    RtmClient, RtmStartResult, UsersListResult, WebClient,
-} from '@slack/client';
+import { RTMClient, WebClient, WebAPICallResult } from '@slack/client';
 import { Container } from 'inversify';
 import { Database, open } from 'sqlite';
 
@@ -21,8 +17,7 @@ import { SLACK_MODULE, TYPES as PROS_TYPES, Processor } from '../processor';
 
 const config = load(process.argv[2]);
 
-const rtm = new RtmClient(config.slack.access_token, {
-    dataStore: false,
+const rtm = new RTMClient(config.slack.access_token, {
     useRtmConnect: true,
 });
 
@@ -48,26 +43,31 @@ container.load(CORE_MODULE);
 container.load(SLACK_MODULE);
 
 //@ts-ignore
-rtm.on(CLIENT_EVENTS.RTM.AUTHENTICATED, (connectData: RtmStartResult) => {
+rtm.on('authenticated', (connectData) => {
     appData.selfId = connectData.self.id;
     console.log(`Logged in as ${appData.selfId} of team ${connectData.team.id}`);
 });
 
-rtm.on(CLIENT_EVENTS.RTM.RTM_CONNECTION_OPENED, () => {
+rtm.on('connected', () => {
     console.log('Ready');
-    web.users.list().then((users: UsersListResult) => {
-        users.members
-            .filter((m: FullUserResult): boolean => m.deleted === false && !m.is_bot && m.is_bot === false)
-            .map((m: FullUserResult) => {
-                return {
-                    id: m.id,
-                    displayName: m.name,
-                    email: m.profile.email ? m.profile.email : '',
-                };
-            }).forEach((user: RuntimeUser) => {
-                appData.users.set(user.id, user);
-            });
-        console.log('user list fetched');
+    web.users.list().then((users: WebAPICallResult) => {
+        if (users.ok) {
+            //@ts-ignore
+            users.members
+                .filter((m: { deleted: boolean; is_bot: boolean; }): boolean => m.deleted === false && !m.is_bot && m.is_bot === false)
+                .map((m: { id: string; name: string; profile: { email: string; } }) => {
+                    return {
+                        id: m.id,
+                        displayName: m.name,
+                        email: m.profile.email ? m.profile.email : '',
+                    };
+                }).forEach((user: RuntimeUser) => {
+                    appData.users.set(user.id, user);
+                });
+            console.log('user list fetched');
+        } else {
+            console.log('user list fetch failed');
+        }
     });
 });
 
@@ -75,7 +75,7 @@ const removeBackspace = (m: string): string => {
     return m ? m.replace('\u0008', '') : '';
 };
 
-rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
+rtm.on('message', (msg) => {
     if (msg.user === 'USLACKBOT' || msg.user === appData.selfId) {
         return;
     }
@@ -106,4 +106,4 @@ rtm.on(RTM_EVENTS.MESSAGE, (msg: MessageEvent) => {
     }
 });
 
-rtm.start();
+rtm.start({});
