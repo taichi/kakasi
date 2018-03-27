@@ -5,7 +5,7 @@ import { Command } from './';
 
 @injectable()
 export abstract class AbstractCommand implements Command {
-    protected args: string[];
+    protected args: string[] = [];
     public initialize(args: string[]): this {
         this.args = args;
         return this;
