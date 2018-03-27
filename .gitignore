@@ -8,6 +8,7 @@ lib
 
 config\.json
 
-kakasi\.sqlite
-/test/command/dict.test.sqlite
-/test/command/user.test.sqlite
+*.sqlite
+/test/command/*.sqlite
+
+*.log
